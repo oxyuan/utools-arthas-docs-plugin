@@ -10,11 +10,9 @@ function loadDocs() {
   try {
     // 调试：打印路径
     const listPath = path.join(__dirname, 'docs-list.json');
-    console.log('Loading docs list from:', listPath);
 
     // 加载 docs-list.json
     const docsMap = JSON.parse(fs.readFileSync(listPath, 'utf-8'));
-    console.log('Documents map loaded');
 
     // 遍历文档映射
     Object.keys(docsMap).forEach(key => {
@@ -32,21 +30,37 @@ function loadDocs() {
         console.warn('Document not found:', filePath);
       }
     });
-
-    console.log('Loaded documents:', Object.keys(docs));
   } catch (error) {
     console.error('加载文档失败:', error);
   }
 }
 
 // 初始化菜单
-function initMenu() {
+function initMenu(filter = '') {
   const menu = document.getElementById('menu');
   menu.innerHTML = '';
   const keys = Object.keys(docs);
-  keys.forEach((key, index) => {
+
+  // 过滤命令
+  const filteredKeys = filter ?
+    keys.filter(key => {
+      const lowerFilter = filter.toLowerCase();
+      return key.toLowerCase().includes(lowerFilter) ||
+             docs[key].description.toLowerCase().includes(lowerFilter);
+    }) : keys;
+
+  if (filteredKeys.length === 0) {
+    const noResults = document.createElement('div');
+    noResults.className = 'no-results';
+    noResults.textContent = `没有找到匹配 "${filter}" 的命令`;
+    menu.appendChild(noResults);
+    return;
+  }
+
+  filteredKeys.forEach((key, index) => {
     const item = document.createElement('div');
     item.className = 'menu-item';
+    item.dataset.key = key; // 存储命令名以便于搜索
 
     // 创建标题元素
     const title = document.createElement('div');
@@ -65,6 +79,11 @@ function initMenu() {
     item.onclick = () => showContent(key);
     item.tabIndex = index; // 使菜单项可聚焦
     menu.appendChild(item);
+
+    // 如果是当前活动项，添加活动类
+    if (currentActiveKey === key) {
+      item.classList.add('active');
+    }
   });
 
   // 添加键盘事件监听
@@ -90,6 +109,9 @@ function initMenu() {
   });
 }
 
+// 当前活动的命令键
+let currentActiveKey = '';
+
 // 显示内容
 function showContent(key) {
   const content = document.getElementById('content');
@@ -99,6 +121,9 @@ function showContent(key) {
     <div class="doc-description">${doc.description}</div>
     <div class="doc-content">${doc.content}</div>
   `;
+
+  // 记录当前活动的命令键
+  currentActiveKey = key;
 
   // 处理超链接点击事件
   content.querySelectorAll('a').forEach(link => {
@@ -119,18 +144,26 @@ function showContent(key) {
   // 更新菜单项选中状态
   document.querySelectorAll('.menu-item').forEach(item => {
     item.classList.remove('active');
-    if (item.querySelector('.menu-item-title').textContent === key) {
+    if (item.dataset.key === key) {
       item.classList.add('active');
     }
   });
 }
+
+// 添加搜索功能
+const searchInput = document.getElementById('searchInput');
+
+searchInput.addEventListener('input', (e) => {
+  const searchTerm = e.target.value.trim();
+  initMenu(searchTerm);
+});
 
 // 添加分隔条功能
 const resizer = document.getElementById('resizer');
 const sidebar = document.querySelector('.sidebar');
 let isResizing = false;
 
-resizer.addEventListener('mousedown', (e) => {
+resizer.addEventListener('mousedown', () => {
   isResizing = true;
   document.addEventListener('mousemove', resize);
   document.addEventListener('mouseup', stopResize);
@@ -139,7 +172,10 @@ resizer.addEventListener('mousedown', (e) => {
 function resize(e) {
   if (isResizing) {
     const newWidth = e.clientX;
-    sidebar.style.width = `${newWidth}px`;
+    // 限制最小宽度
+    if (newWidth >= 200) {
+      sidebar.style.width = `${newWidth}px`;
+    }
   }
 }
 
@@ -149,15 +185,74 @@ function stopResize() {
   document.removeEventListener('mouseup', stopResize);
 }
 
+// 通知功能
+function showNotification(message, type = '', duration = 3000) {
+  const notification = document.getElementById('notification');
+  notification.textContent = message;
+  notification.className = 'notification show';
+
+  if (type) {
+    notification.classList.add(type);
+  }
+
+  setTimeout(() => {
+    notification.classList.remove('show');
+    setTimeout(() => {
+      notification.textContent = '';
+      if (type) {
+        notification.classList.remove(type);
+      }
+    }, 300);
+  }, duration);
+}
+
 // 版本切换功能
 const versionButton = document.getElementById('versionButton');
+const versionDropdown = document.getElementById('versionDropdown');
 let currentVersion = '4.0.4';
 
-versionButton.addEventListener('click', () => {
-  // 这里可以添加切换版本的逻辑
-  // 例如：加载不同版本的文档或跳转到其他页面
-  alert('版本切换功能待实现');
+// 点击按钮显示下拉菜单
+versionButton.addEventListener('click', (e) => {
+  e.stopPropagation();
+  versionDropdown.classList.toggle('show');
 });
+
+// 点击下拉菜单项
+versionDropdown.addEventListener('click', (e) => {
+  if (e.target.tagName === 'A') {
+    e.preventDefault();
+    const version = e.target.getAttribute('data-version');
+    if (version !== currentVersion) {
+      currentVersion = version;
+      versionButton.textContent = `切换版本 (当前: ${currentVersion})`;
+      showNotification(`已切换到 Arthas ${currentVersion} 文档`, 'success');
+      // 这里可以添加切换版本的逻辑
+      // 例如：加载不同版本的文档
+    } else {
+      showNotification(`当前已经是 Arthas ${currentVersion} 文档`);
+    }
+    versionDropdown.classList.remove('show');
+  }
+});
+
+// 点击其他地方关闭下拉菜单
+document.addEventListener('click', () => {
+  versionDropdown.classList.remove('show');
+});
+
+// 标记当前版本
+function updateActiveVersion() {
+  const links = versionDropdown.querySelectorAll('a');
+  links.forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('data-version') === currentVersion) {
+      link.classList.add('active');
+    }
+  });
+}
+
+// 初始化时标记当前版本
+updateActiveVersion();
 
 // 初始化
 loadDocs();
