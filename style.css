@@ -10,6 +10,10 @@ body, html {
   padding: 0;
   height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #333;
+  background-color: #f8f9fa;
 }
 
 .container {
@@ -20,27 +24,29 @@ body, html {
 }
 
 .sidebar {
-  width: 200px;
-  border-right: 1px solid #eee;
+  width: 280px;
+  border-right: 1px solid #e0e0e0;
   display: flex;
   flex-direction: column;
   height: 100%;
   background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
 }
 
 .search-box {
-  padding: 10px;
-  border-bottom: 1px solid #eee;
+  padding: 15px;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 #searchInput {
   width: 100%;
-  padding: 8px;
+  padding: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
   box-sizing: border-box;
   background-color: #fff;
-  color: #000;
+  color: #333;
+  font-size: 14px;
 }
 
 .menu {
@@ -50,35 +56,75 @@ body, html {
 }
 
 .menu-item {
-  padding: 8px 10px;
+  padding: 12px;
+  margin-bottom: 8px;
   cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+.menu-item-title {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+  font-size: 15px;
+}
+
+.menu-item-desc {
+  font-size: 13px;
   color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .menu-item:hover {
-  background: #f5f5f5;
+  background: #f0f7ff;
+  border-left-color: #1890ff;
 }
 
 .menu-item.active {
   background: #e6f7ff;
+  border-left-color: #1890ff;
+}
+
+.menu-item.active .menu-item-title {
   color: #1890ff;
 }
 
 .content {
   flex: 1;
-  padding: 0 20px;
+  padding: 30px;
   overflow-y: auto;
   height: 100%;
   position: relative;
-  margin-top: 0;
   background-color: #fff;
-  color: #000;
+  color: #333;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.03);
+}
+
+/* 文档描述样式 */
+.doc-description {
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+/* 文档内容样式 */
+.doc-content {
+  line-height: 1.7;
 }
 
 /* 确保 h1 元素没有额外的 margin */
 .content h1 {
   margin-top: 0;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+  color: #1a1a1a;
+  font-size: 28px;
+  font-weight: 600;
 }
 
 /* 调整内容区域的最后一个元素的 margin */
@@ -92,136 +138,334 @@ body, html {
 }
 
 /* Markdown 内容样式 */
-.content div {
-  line-height: 1.6;
+.doc-content h2 {
+  margin: 1.8em 0 0.8em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid #eaecef;
+  font-size: 24px;
+  font-weight: 600;
+  color: #24292e;
 }
 
-.content h1, .content h2, .content h3 {
-  margin: 1.5em 0 0.5em;
+.doc-content h3 {
+  margin: 1.5em 0 0.8em;
+  font-size: 20px;
+  font-weight: 600;
+  color: #24292e;
 }
 
-.content h2, .content h3 {
-  margin: 1em 0 0.5em;
-}
-
-.content p {
+.doc-content p {
   margin: 1em 0;
+  line-height: 1.7;
 }
 
-.content code {
-  background-color: rgba(175, 184, 193, 0.2);
+.doc-content a {
+  color: #0366d6;
+  text-decoration: none;
+}
+
+.doc-content a:hover {
+  text-decoration: underline;
+}
+
+.doc-content code {
+  background-color: rgba(27, 31, 35, 0.05);
   padding: 0.2em 0.4em;
-  border-radius: 4px;
-  font-family: monospace;
+  border-radius: 3px;
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 85%;
 }
 
-.content pre {
+.doc-content pre {
   background-color: #f6f8fa;
-  padding: 1em;
-  border-radius: 4px;
+  padding: 16px;
+  border-radius: 6px;
   overflow-x: auto;
+  margin: 1em 0;
+  line-height: 1.45;
 }
 
-.content blockquote {
+.doc-content pre code {
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: 14px;
+  color: #24292e;
+  word-break: normal;
+  white-space: pre;
+  overflow-wrap: normal;
+}
+
+/* 代码高亮样式 */
+.code-block {
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+  line-height: 1.45;
+}
+
+.code-block .keyword {
+  color: #d73a49;
+  font-weight: bold;
+}
+
+.code-block .command {
+  color: #0366d6;
+}
+
+.code-block .bash-command {
+  color: #6f42c1;
+  font-weight: bold;
+}
+
+.code-block.java .string {
+  color: #032f62;
+}
+
+.code-block.java .comment {
+  color: #6a737d;
+  font-style: italic;
+}
+
+/* 暗黑模式下的代码高亮 */
+@media (prefers-color-scheme: dark) {
+  .code-block .keyword {
+    color: #ff7b72;
+  }
+
+  .code-block .command {
+    color: #58a6ff;
+  }
+
+  .code-block .bash-command {
+    color: #d2a8ff;
+  }
+
+  .code-block.java .string {
+    color: #a5d6ff;
+  }
+
+  .code-block.java .comment {
+    color: #8b949e;
+  }
+}
+
+.doc-content blockquote {
   border-left: 4px solid #dfe2e5;
-  padding-left: 1em;
+  padding: 0 1em;
   color: #6a737d;
   margin: 1em 0;
+  background-color: #f8f9fa;
+  border-radius: 0 3px 3px 0;
+}
+
+.doc-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+  overflow: auto;
+}
+
+.doc-content table th,
+.doc-content table td {
+  padding: 8px 12px;
+  border: 1px solid #dfe2e5;
+  text-align: left;
+}
+
+.doc-content table th {
+  background-color: #f6f8fa;
+  font-weight: 600;
+}
+
+.doc-content table tr:nth-child(2n) {
+  background-color: #f8f9fa;
+}
+
+.doc-content ul,
+.doc-content ol {
+  padding-left: 2em;
+  margin: 1em 0;
+}
+
+.doc-content li {
+  margin: 0.3em 0;
 }
 
 /* 暗黑模式 */
 @media (prefers-color-scheme: dark) {
-  body {
-    background-color: #1e1e1e;
+  body, html {
+    background-color: #121212;
     color: #e1e1e1;
   }
 
   .sidebar {
-    background-color: #252526;
-    border-right-color: #3c3c3c;
+    background-color: #1e1e1e;
+    border-right-color: #333;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   }
 
   .menu-item {
+    border-left-color: transparent;
+  }
+
+  .menu-item-title {
     color: #e1e1e1;
   }
 
+  .menu-item-desc {
+    color: #aaa;
+  }
+
   .menu-item:hover {
-    background: #2a2d2e;
+    background: #2c2c2c;
+    border-left-color: #4fa3e3;
   }
 
   .menu-item.active {
-    background: #094771;
+    background: #2d3748;
+    border-left-color: #4fa3e3;
+  }
+
+  .menu-item.active .menu-item-title {
     color: #4fa3e3;
   }
 
   #searchInput {
-    background-color: #3c3c3c;
-    border-color: #3c3c3c;
+    background-color: #2d2d2d;
+    border-color: #444;
     color: #e1e1e1;
   }
 
   .content {
     background-color: #1e1e1e;
     color: #e1e1e1;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
   }
 
-  .content code {
+  .doc-description {
+    color: #bbb;
+    border-bottom-color: #333;
+  }
+
+  .content h1 {
+    color: #e1e1e1;
+  }
+
+  .doc-content h2, .doc-content h3 {
+    color: #e1e1e1;
+    border-bottom-color: #333;
+  }
+
+  .doc-content a {
+    color: #58a6ff;
+  }
+
+  .doc-content code {
     background-color: rgba(110, 118, 129, 0.4);
+    color: #e1e1e1;
   }
 
-  .content pre {
+  .doc-content pre {
     background-color: #2d2d2d;
   }
 
-  .content blockquote {
+  .doc-content pre code {
+    color: #e1e1e1;
+  }
+
+  .doc-content blockquote {
     border-left-color: #4a4a4a;
     color: #8b949e;
+    background-color: #2d2d2d;
+  }
+
+  .doc-content table th {
+    background-color: #2d2d2d;
+  }
+
+  .doc-content table td,
+  .doc-content table th {
+    border-color: #444;
+  }
+
+  .doc-content table tr:nth-child(2n) {
+    background-color: #252525;
   }
 }
 
 /* 分隔条样式 */
 .resizer {
-  width: 5px;
-  background-color: #ddd;
+  width: 6px;
+  background-color: #f0f0f0;
   cursor: ew-resize;
   user-select: none;
+  transition: background-color 0.2s ease;
+}
+
+.resizer:hover {
+  background-color: #1890ff;
 }
 
 /* 暗黑模式下的分隔条 */
 @media (prefers-color-scheme: dark) {
   .resizer {
-    background-color: #3c3c3c;
+    background-color: #333;
+  }
+
+  .resizer:hover {
+    background-color: #4fa3e3;
   }
 }
 
 .version-switcher {
-  padding: 10px;
-  border-bottom: 1px solid #eee;
+  padding: 15px;
+  border-bottom: 1px solid #e0e0e0;
   flex-shrink: 0;
 }
 
 #versionButton {
   width: 100%;
-  padding: 8px;
+  padding: 10px 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
   background-color: #f5f5f5;
   cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #versionButton:hover {
   background-color: #e6e6e6;
+  border-color: #ccc;
+}
+
+#versionButton:active {
+  background-color: #e0e0e0;
+  transform: translateY(1px);
 }
 
 /* 暗黑模式下的版本切换按钮 */
 @media (prefers-color-scheme: dark) {
+  .version-switcher {
+    border-bottom-color: #333;
+  }
+
   #versionButton {
-    background-color: #3c3c3c;
-    border-color: #3c3c3c;
+    background-color: #2d2d2d;
+    border-color: #444;
     color: #e1e1e1;
   }
 
   #versionButton:hover {
-    background-color: #4a4a4a;
+    background-color: #3a3a3a;
+    border-color: #555;
+  }
+
+  #versionButton:active {
+    background-color: #333;
   }
 }

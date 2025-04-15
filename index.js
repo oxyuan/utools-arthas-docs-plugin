@@ -11,30 +11,28 @@ function loadDocs() {
     // 调试：打印路径
     const listPath = path.join(__dirname, 'docs-list.json');
     console.log('Loading docs list from:', listPath);
-    
+
     // 加载 docs-list.json
-    const order = JSON.parse(fs.readFileSync(listPath, 'utf-8'));
-    console.log('Document order:', order);
-    
-    // 按照顺序加载文档
-    order.forEach(file => {
-      // 去掉文件名的 .md 扩展名（如果存在）
-      const baseName = file.endsWith('.md') ? file.slice(0, -3) : file;
-      const filePath = path.join(docsDir, `${baseName}.md`);
+    const docsMap = JSON.parse(fs.readFileSync(listPath, 'utf-8'));
+    console.log('Documents map loaded');
+
+    // 遍历文档映射
+    Object.keys(docsMap).forEach(key => {
+      const filePath = path.join(docsDir, `${key}.md`);
       console.log('Loading document:', filePath);
-      
+
       if (fs.existsSync(filePath)) {
-        const key = path.basename(baseName, '.md');
         const content = fs.readFileSync(filePath, 'utf-8');
         docs[key] = {
           title: key,
+          description: docsMap[key],
           content: marked.parse(content)
         };
       } else {
         console.warn('Document not found:', filePath);
       }
     });
-    
+
     console.log('Loaded documents:', Object.keys(docs));
   } catch (error) {
     console.error('加载文档失败:', error);
@@ -49,7 +47,21 @@ function initMenu() {
   keys.forEach((key, index) => {
     const item = document.createElement('div');
     item.className = 'menu-item';
-    item.textContent = docs[key].title;
+
+    // 创建标题元素
+    const title = document.createElement('div');
+    title.className = 'menu-item-title';
+    title.textContent = key;
+
+    // 创建描述元素
+    const desc = document.createElement('div');
+    desc.className = 'menu-item-desc';
+    desc.textContent = docs[key].description;
+
+    // 添加到菜单项
+    item.appendChild(title);
+    item.appendChild(desc);
+
     item.onclick = () => showContent(key);
     item.tabIndex = index; // 使菜单项可聚焦
     menu.appendChild(item);
@@ -83,8 +95,9 @@ function showContent(key) {
   const content = document.getElementById('content');
   const doc = docs[key];
   content.innerHTML = `
-    <h1>${doc.title}</h1>
-    <div>${doc.content}</div>
+    <h1>${key}</h1>
+    <div class="doc-description">${doc.description}</div>
+    <div class="doc-content">${doc.content}</div>
   `;
 
   // 处理超链接点击事件
@@ -106,7 +119,7 @@ function showContent(key) {
   // 更新菜单项选中状态
   document.querySelectorAll('.menu-item').forEach(item => {
     item.classList.remove('active');
-    if (item.textContent === doc.title) {
+    if (item.querySelector('.menu-item-title').textContent === key) {
       item.classList.add('active');
     }
   });

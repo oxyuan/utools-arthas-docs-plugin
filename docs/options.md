@@ -1,7 +1,10 @@
-[`options`在线教程在新窗口打开](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-options)
+# options
+
+[`options`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-options)
 
 > 提示
 > 全局开关
+
 | 名称 | 默认值 | 描述 |
 | --- | --- | --- |
 | unsafe | false | 是否支持对系统级别的类进行增强，打开该开关可能导致把 JVM 搞挂，请慎重选择！ |
@@ -16,9 +19,9 @@
 | verbose | false | 是否打印更多详细信息 |
 | strict | true | 是否启用 strict 模式 |
 
-## [#](#查看所有的-options) 查看所有的 options
+## 查看所有的 options
 
-```
+```bash
 $ options
  LEVEL  TYPE    NAME          VALUE   SUMMARY               DESCRIPTION
 -------------------------------------------------------------------------------------------------------
@@ -60,9 +63,9 @@ $ options
                                                             false`
 ```
 
-## [#](#获取-option-的值) 获取 option 的值
+## 获取 option 的值
 
-```
+```bash
 $ options json-format
  LEVEL  TYPE  NAME         VALUE  SUMMARY             DESCRIPTION
 --------------------------------------------------------------------------------------------
@@ -73,35 +76,36 @@ $ options json-format
 
 > 提示
 > 默认情况下`json-format`为 false，如果希望`watch`/`tt`等命令结果以 json 格式输出，则可以设置`json-format`为 true。
-## [#](#设置指定的-option) 设置指定的 option
+
+## 设置指定的 option
 
 例如，想打开执行结果存日志功能，输入如下命令即可：
 
-```
+```bash
 $ options save-result true
  NAME         BEFORE-VALUE  AFTER-VALUE
 ----------------------------------------
  save-result  false         true
 ```
 
-## [#](#打开-unsafe-开关-支持-jdk-package-下的类) 打开 unsafe 开关，支持 jdk package 下的类
+## 打开 unsafe 开关，支持 jdk package 下的类
 
 默认情况下，`watch`/`trace`/`tt`/`trace`/`monitor`等命令不支持`java.*` package 下的类。可以设置`unsafe`为 true，则可以增强。
 
-```
+```bash
 $ options unsafe true
  NAME    BEFORE-VALUE  AFTER-VALUE
 -----------------------------------
  unsafe  false         true
 ```
 
-```
+```bash
 $ watch java.lang.invoke.Invokers callSiteForm
 Press Q or Ctrl+C to abort.
 Affect(class count: 1 , method count: 1) cost in 61 ms, listenerId: 1
 ```
 
-## [#](#关闭-strict-模式-允许在-ognl-表达式里设置对象属性) 关闭 strict 模式，允许在 ognl 表达式里设置对象属性
+## 关闭 strict 模式，允许在 ognl 表达式里设置对象属性
 
 > 提示
 > since 3.6.0
@@ -113,7 +117,7 @@ Affect(class count: 1 , method count: 1) cost in 61 ms, listenerId: 1
 
 以`MathGame`为例，会出现以下的错误提示。
 
-```
+```bash
 $ watch demo.MathGame primeFactors 'target' 'target.illegalArgumentCount=1'
 Press Q or Ctrl+C to abort.
 Affect(class count: 1 , method count: 1) cost in 206 ms, listenerId: 1
@@ -122,4 +126,4 @@ watch failed, condition is: target.illegalArgumentCount=1, express is: target, B
 
 用户如果确定要在`ognl`表达式里更新对象，可以执行`options strict false`，关闭`strict`模式。
 
-- 更多信息参考： https://github.com/alibaba/arthas/issues/2128
+- 更多信息参考： [https://github.com/alibaba/arthas/issues/2128](https://github.com/alibaba/arthas/issues/2128)
