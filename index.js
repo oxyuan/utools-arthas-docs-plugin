@@ -151,7 +151,7 @@ function resize(e) {
   if (isResizing) {
     const newWidth = e.clientX;
     // 限制最小宽度
-    if (newWidth >= 200) {
+    if (newWidth >= 180) {
       sidebar.style.width = `${newWidth}px`;
     }
   }
