@@ -1,0 +1,12 @@
+{
+  "logo": "logo.png",
+  "preload": "preload.js",
+  "main": "index.html",
+  "features": [
+    {
+      "code": "arthas",
+      "explain": "Arthas 4.0.4 文档",
+      "cmds": ["arthas", "arthas文档", "java诊断"]
+    }
+  ]
+} 
