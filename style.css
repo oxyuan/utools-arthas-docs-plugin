@@ -33,30 +33,7 @@ body, html {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
 }
 
-.search-box {
-  padding: 10px 15px;
-  border-bottom: 1px solid #e0e0e0;
-}
 
-#searchInput {
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-sizing: border-box;
-  background-color: #fff;
-  color: #333;
-  font-size: 13px;
-  transition: all 0.2s ease;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-#searchInput:focus {
-  border-color: #1890ff;
-  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
-  outline: none;
-}
 
 .menu {
   flex: 1;
@@ -64,16 +41,7 @@ body, html {
   padding: 10px;
 }
 
-.no-results {
-  padding: 15px 10px;
-  color: #999;
-  text-align: center;
-  font-style: italic;
-  font-size: 14px;
-  border: 1px dashed #ddd;
-  border-radius: 4px;
-  margin: 10px 0;
-}
+
 
 .menu-item {
   padding: 8px 10px;
@@ -132,18 +100,18 @@ body, html {
   background-color: #e6f7ff;
   color: #1890ff;
   transition: all 0.3s ease;
-  text-align: center;
+  text-align: left;
   font-size: 14px;
   border-bottom: 1px solid transparent;
   width: 100%;
   position: relative;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
 }
 
 .notification.show {
-  padding: 10px 20px;
+  padding: 10px 30px 10px 30px;
   max-height: 60px;
   border-bottom-color: #91d5ff;
 }
@@ -398,10 +366,7 @@ body, html {
     color: #aaa;
   }
 
-  .no-results {
-    color: #777;
-    border-color: #444;
-  }
+
 
   .menu-item:hover {
     background: #2c2c2c;
@@ -417,11 +382,7 @@ body, html {
     color: #4fa3e3;
   }
 
-  #searchInput {
-    background-color: #2d2d2d;
-    border-color: #444;
-    color: #e1e1e1;
-  }
+
 
   .content {
     background-color: #1e1e1e;

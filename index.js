@@ -36,28 +36,12 @@ function loadDocs() {
 }
 
 // 初始化菜单
-function initMenu(filter = '') {
+function initMenu() {
   const menu = document.getElementById('menu');
   menu.innerHTML = '';
   const keys = Object.keys(docs);
 
-  // 过滤命令
-  const filteredKeys = filter ?
-    keys.filter(key => {
-      const lowerFilter = filter.toLowerCase();
-      return key.toLowerCase().includes(lowerFilter) ||
-             docs[key].description.toLowerCase().includes(lowerFilter);
-    }) : keys;
-
-  if (filteredKeys.length === 0) {
-    const noResults = document.createElement('div');
-    noResults.className = 'no-results';
-    noResults.textContent = `没有找到匹配 "${filter}" 的命令`;
-    menu.appendChild(noResults);
-    return;
-  }
-
-  filteredKeys.forEach((key, index) => {
+  keys.forEach((key, index) => {
     const item = document.createElement('div');
     item.className = 'menu-item';
     item.dataset.key = key; // 存储命令名以便于搜索
@@ -150,34 +134,7 @@ function showContent(key) {
   });
 }
 
-// 添加搜索功能
-const searchInput = document.getElementById('searchInput');
 
-// 使用防抖动函数来优化搜索性能
-function debounce(func, wait) {
-  let timeout;
-  return function(...args) {
-    const context = this;
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(context, args), wait);
-  };
-}
-
-// 处理搜索输入
-function handleSearch() {
-  const searchTerm = searchInput.value.trim();
-  console.log('Searching for:', searchTerm);
-  initMenu(searchTerm);
-}
-
-// 使用多个事件来确保兼容性
-searchInput.addEventListener('input', debounce(handleSearch, 300));
-searchInput.addEventListener('change', handleSearch);
-searchInput.addEventListener('keyup', (e) => {
-  if (e.key === 'Enter') {
-    handleSearch();
-  }
-});
 
 // 添加分隔条功能
 const resizer = document.getElementById('resizer');
