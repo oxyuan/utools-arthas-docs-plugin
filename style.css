@@ -48,6 +48,8 @@ body, html {
   color: #333;
   font-size: 13px;
   transition: all 0.2s ease;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 #searchInput:focus {
@@ -133,6 +135,11 @@ body, html {
   text-align: center;
   font-size: 14px;
   border-bottom: 1px solid transparent;
+  width: 100%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .notification.show {
@@ -157,6 +164,12 @@ body, html {
   background-color: #fff2f0;
   color: #f5222d;
   border-bottom-color: #ffccc7;
+}
+
+.notification.info {
+  background-color: #e6f7ff;
+  color: #1890ff;
+  border-bottom-color: #91d5ff;
 }
 
 .content {
@@ -694,6 +707,12 @@ body, html {
     background-color: #2a1215;
     color: #ff4d4f;
     border-bottom-color: #441a1d;
+  }
+
+  .notification.info {
+    background-color: #0d2b45;
+    color: #4fa3e3;
+    border-bottom-color: #094771;
   }
 
   .content-container {

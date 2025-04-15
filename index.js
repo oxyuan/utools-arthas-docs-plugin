@@ -153,9 +153,30 @@ function showContent(key) {
 // 添加搜索功能
 const searchInput = document.getElementById('searchInput');
 
-searchInput.addEventListener('input', (e) => {
-  const searchTerm = e.target.value.trim();
+// 使用防抖动函数来优化搜索性能
+function debounce(func, wait) {
+  let timeout;
+  return function(...args) {
+    const context = this;
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(context, args), wait);
+  };
+}
+
+// 处理搜索输入
+function handleSearch() {
+  const searchTerm = searchInput.value.trim();
+  console.log('Searching for:', searchTerm);
   initMenu(searchTerm);
+}
+
+// 使用多个事件来确保兼容性
+searchInput.addEventListener('input', debounce(handleSearch, 300));
+searchInput.addEventListener('change', handleSearch);
+searchInput.addEventListener('keyup', (e) => {
+  if (e.key === 'Enter') {
+    handleSearch();
+  }
 });
 
 // 添加分隔条功能
@@ -214,7 +235,8 @@ let currentVersion = '4.0.4';
 // 点击按钮显示下拉菜单
 versionButton.addEventListener('click', (e) => {
   e.stopPropagation();
-  versionDropdown.classList.toggle('show');
+  // 当前只有一个版本，显示提示信息
+  showNotification(`当前仅支持 Arthas ${currentVersion} 版本文档`, 'info');
 });
 
 // 点击下拉菜单项
@@ -226,10 +248,8 @@ versionDropdown.addEventListener('click', (e) => {
       currentVersion = version;
       versionButton.textContent = `切换版本 (当前: ${currentVersion})`;
       showNotification(`已切换到 Arthas ${currentVersion} 文档`, 'success');
-      // 这里可以添加切换版本的逻辑
-      // 例如：加载不同版本的文档
     } else {
-      showNotification(`当前已经是 Arthas ${currentVersion} 文档`);
+      showNotification(`当前已经是 Arthas ${currentVersion} 文档`, 'info');
     }
     versionDropdown.classList.remove('show');
   }
@@ -239,20 +259,6 @@ versionDropdown.addEventListener('click', (e) => {
 document.addEventListener('click', () => {
   versionDropdown.classList.remove('show');
 });
-
-// 标记当前版本
-function updateActiveVersion() {
-  const links = versionDropdown.querySelectorAll('a');
-  links.forEach(link => {
-    link.classList.remove('active');
-    if (link.getAttribute('data-version') === currentVersion) {
-      link.classList.add('active');
-    }
-  });
-}
-
-// 初始化时标记当前版本
-updateActiveVersion();
 
 // 初始化
 loadDocs();
