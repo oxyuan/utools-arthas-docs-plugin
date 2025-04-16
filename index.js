@@ -17,7 +17,6 @@ function loadDocs() {
     // 遍历文档映射
     Object.keys(docsMap).forEach(key => {
       const filePath = path.join(docsDir, `${key}.md`);
-      console.log('Loading document:', filePath);
 
       if (fs.existsSync(filePath)) {
         const content = fs.readFileSync(filePath, 'utf-8');
@@ -109,6 +108,14 @@ function showContent(key) {
   // 记录当前活动的命令键
   currentActiveKey = key;
 
+  // 处理表格，将其包裹在滚动容器中
+  content.querySelectorAll('.doc-content table').forEach(table => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'table-wrapper';
+    table.parentNode.insertBefore(wrapper, table);
+    wrapper.appendChild(table);
+  });
+
   // 处理超链接点击事件
   content.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', (e) => {
@@ -151,7 +158,7 @@ function resize(e) {
   if (isResizing) {
     const newWidth = e.clientX;
     // 限制最小宽度
-    if (newWidth >= 180) {
+    if (newWidth >= 160) {
       sidebar.style.width = `${newWidth}px`;
     }
   }
