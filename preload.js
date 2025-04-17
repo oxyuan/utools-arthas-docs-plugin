@@ -7,19 +7,28 @@ const renderer = new marked.Renderer();
 
 // 自定义图片渲染器，处理相对路径
 renderer.image = function(href, title, text) {
+  // 确保 href 是字符串
+  if (!href || typeof href !== 'string') {
+    href = '';
+  }
+
   // 处理相对路径，如 ../images/xxx.png
-  if (href && href.startsWith('../')) {
+  if (href && href.indexOf('../') === 0) {
     // 将 ../images/xxx.png 转换为 ./images/xxx.png
     href = href.replace(/^\.\.\//, './');
   }
 
+  // 确保 title 和 text 是字符串
+  title = title || '';
+  text = text || '';
+
   // 构建标准的 img 标签，使用绝对路径
-  if (href && !href.startsWith('http')) {
+  if (href && href.indexOf('http') !== 0) {
     // 使用 __dirname 构建绝对路径
     const absolutePath = path.join(__dirname, href);
-    return `<img src="${absolutePath}" alt="${text || ''}" title="${title || ''}" />`;
+    return `<img src="${absolutePath}" alt="${text}" title="${title}" />`;
   } else {
-    return `<img src="${href}" alt="${text || ''}" title="${title || ''}" />`;
+    return `<img src="${href}" alt="${text}" title="${title}" />`;
   }
 };
 
