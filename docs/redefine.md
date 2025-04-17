@@ -1,10 +1,10 @@
 > 提示
 > 推荐使用 [retransform](https://arthas.aliyun.com/doc/retransform.html) 命令
-[`mc-redefine`在线教程在新窗口打开](https://arthas.aliyun.com/doc/arthas-tutorials?language=cn&id=command-mc-redefine)
+[`mc-redefine`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials?language=cn&id=command-mc-redefine)
 
 > 提示
 > 加载外部的`.class`文件，redefine jvm 已加载的类。
-参考：[Instrumentation#redefineClasses在新窗口打开](https://docs.oracle.com/javase/8/docs/api/java/lang/instrument/Instrumentation.html#redefineClasses-java.lang.instrument.ClassDefinition...-)
+参考：[Instrumentation#redefineClasses](https://docs.oracle.com/javase/8/docs/api/java/lang/instrument/Instrumentation.html#redefineClasses-java.lang.instrument.ClassDefinition...-)
 
 ## [#](#常见问题) 常见问题
 

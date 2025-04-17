@@ -1,4 +1,4 @@
-[`trace`在线教程在新窗口打开](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-trace)
+[`trace`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-trace)
 
 > 提示
 > 方法内部调用路径，并输出方法路径上的每个节点上耗时
@@ -20,8 +20,8 @@
 
 请参考[表达式核心变量](https://arthas.aliyun.com/doc/advice-class.html)中关于该节点的描述。
 
-- 特殊用法请参考：[https://github.com/alibaba/arthas/issues/71在新窗口打开](https://github.com/alibaba/arthas/issues/71)
-- OGNL 表达式官网：[https://commons.apache.org/dormant/commons-ognl/language-guide.html在新窗口打开](https://commons.apache.org/dormant/commons-ognl/language-guide.html)
+- 特殊用法请参考：[https://github.com/alibaba/arthas/issues/71](https://github.com/alibaba/arthas/issues/71)
+- OGNL 表达式官网：[https://commons.apache.org/dormant/commons-ognl/language-guide.html](https://commons.apache.org/dormant/commons-ognl/language-guide.html)
 
 很多时候我们只想看到某个方法的 rt 大于某个时间之后的 trace 结果，现在 Arthas 可以按照方法执行的耗时来进行过滤了，例如`trace *StringUtils isBlank '#cost>100'`表示当执行时间超过 100ms 的时候，才会输出 trace 的结果。
 
@@ -31,9 +31,9 @@
 
 - `trace` 能方便的帮助你定位和发现因 RT 高而导致的性能问题缺陷，但其每次只能跟踪一级方法的调用链路。
 
-参考：[Trace 命令的实现原理在新窗口打开](https://github.com/alibaba/arthas/issues/597)
+参考：[Trace 命令的实现原理](https://github.com/alibaba/arthas/issues/597)
 - 3.3.0 版本后，可以使用动态 Trace 功能，不断增加新的匹配类，参考下面的示例。
-- 目前不支持 `trace java.lang.Thread getName`，参考 issue: [#1610在新窗口打开](https://github.com/alibaba/arthas/issues/1610) ，考虑到不是非常必要场景，且修复有一定难度，因此当前暂不修复
+- 目前不支持 `trace java.lang.Thread getName`，参考 issue: [#1610](https://github.com/alibaba/arthas/issues/1610) ，考虑到不是非常必要场景，且修复有一定难度，因此当前暂不修复
 
 ## [#](#使用参考) 使用参考
 

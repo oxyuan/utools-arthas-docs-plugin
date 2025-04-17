@@ -1,4 +1,4 @@
-[`stack`在线教程在新窗口打开](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-stack)
+[`stack`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-stack)
 
 > 提示
 > 输出当前方法被调用的调用路径
@@ -21,8 +21,8 @@
 
 请参考[表达式核心变量](https://arthas.aliyun.com/doc/advice-class.html)中关于该节点的描述。
 
-- 特殊用法请参考：[https://github.com/alibaba/arthas/issues/71在新窗口打开](https://github.com/alibaba/arthas/issues/71)
-- OGNL 表达式官网：[https://commons.apache.org/dormant/commons-ognl/language-guide.html在新窗口打开](https://commons.apache.org/dormant/commons-ognl/language-guide.html)
+- 特殊用法请参考：[https://github.com/alibaba/arthas/issues/71](https://github.com/alibaba/arthas/issues/71)
+- OGNL 表达式官网：[https://commons.apache.org/dormant/commons-ognl/language-guide.html](https://commons.apache.org/dormant/commons-ognl/language-guide.html)
 
 ## [#](#使用例子) 使用例子
 

@@ -1,12 +1,12 @@
-[`profiler`在线教程在新窗口打开](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-profiler)
+[`profiler`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-profiler)
 
 > 提示
-> 使用[async-profiler在新窗口打开](https://github.com/jvm-profiling-tools/async-profiler)生成火焰图
+> 使用[async-profiler](https://github.com/jvm-profiling-tools/async-profiler)生成火焰图
 `profiler` 命令支持生成应用热点的火焰图。本质上是通过不断的采样，然后把收集到的采样结果生成火焰图。
 
 `profiler` 命令基本运行结构是 `profiler action [actionArg]`
 
-`profiler` 命令的格式基本与上游项目 [async-profiler在新窗口打开](https://github.com/async-profiler/async-profiler) 保持一致，详细的使用方式可参考上游项目的 README、Github Disscussions 以及其他文档资料。
+`profiler` 命令的格式基本与上游项目 [async-profiler](https://github.com/async-profiler/async-profiler) 保持一致，详细的使用方式可参考上游项目的 README、Github Disscussions 以及其他文档资料。
 
 ## [#](#参数说明) 参数说明
 
@@ -59,7 +59,7 @@ Call trace storage:   10244 KB
 
 ### [#](#生成火焰图格式结果) 生成火焰图格式结果
 
-默认情况下，结果是 [Flame Graph在新窗口打开](https://github.com/BrendanGregg/FlameGraph) 格式的 `html` 文件，也可以用 `-o` 或 `--format` 参数指定其他内容格式，包括 flat、traces、collapsed、flamegraph、tree、jfr。
+默认情况下，结果是 [Flame Graph](https://github.com/BrendanGregg/FlameGraph)格式的 `html` 文件，也可以用 `-o` 或 `--format` 参数指定其他内容格式，包括 flat、traces、collapsed、flamegraph、tree、jfr。
 
 ```
 $ profiler stop --format flamegraph
@@ -71,7 +71,7 @@ OK
 
 ## [#](#通过浏览器查看-arthas-output-下面的-profiler-结果) 通过浏览器查看 arthas-output 下面的 profiler 结果
 
-默认情况下，arthas 使用 3658 端口，则可以打开： [http://localhost:3658/arthas-output/在新窗口打开](http://localhost:3658/arthas-output/) 查看到`arthas-output`目录下面的 profiler 结果：
+默认情况下，arthas 使用 3658 端口，则可以打开： [http://localhost:3658/arthas-output/](http://localhost:3658/arthas-output/) 查看到`arthas-output`目录下面的 profiler 结果：
 
 
 点击可以查看具体的结果：
@@ -128,7 +128,7 @@ Perf events:
   uprobe:path
 ```
 
-如果遇到 OS 本身的权限/配置问题，然后缺少部分 event，可以参考 [async-profiler 的文档在新窗口打开](https://github.com/jvm-profiling-tools/async-profiler)。
+如果遇到 OS 本身的权限/配置问题，然后缺少部分 event，可以参考 [async-profiler 的文档](https://github.com/jvm-profiling-tools/async-profiler)。
 
 可以使用 `check` action 测试某个 event 是否可用，此 action 的参数格式与 start 一致。
 
@@ -172,7 +172,7 @@ profiler execute 'start,framebuf=5000000'
 profiler execute 'stop,file=/tmp/result.html'
 ```
 
-具体的格式参考： [arguments.cpp在新窗口打开](https://github.com/async-profiler/async-profiler/blob/v2.9/src/arguments.cpp#L52)
+具体的格式参考： [arguments.cpp](https://github.com/async-profiler/async-profiler/blob/v2.9/src/arguments.cpp#L52)
 
 ## [#](#查看所有支持的-action) 查看所有支持的 action
 
@@ -244,7 +244,7 @@ profiler start -o jfr
 
 ## [#](#控制分析结果的格式) 控制分析结果的格式
 
-使用 `-s` 选项将结果中的 Fully qualified name 替换为简单名称，如 `demo.MathGame.main` 替换为 `MathGame.main`。使用 `-g` 选项指定输出方法签名，如 `demo.MathGame.main` 替换为 `demo.MathGame.main([Ljava/lang/String;)V`。此外还有许多可调整分析结果格式的选项，可参考 [async-profiler 的 README 文档在新窗口打开](https://github.com/async-profiler/async-profiler#readme) 以及 [async-profiler 的 Github Discussions在新窗口打开](https://github.com/async-profiler/async-profiler/discussions) 等材料。
+使用 `-s` 选项将结果中的 Fully qualified name 替换为简单名称，如 `demo.MathGame.main` 替换为 `MathGame.main`。使用 `-g` 选项指定输出方法签名，如 `demo.MathGame.main` 替换为 `demo.MathGame.main([Ljava/lang/String;)V`。此外还有许多可调整分析结果格式的选项，可参考 [async-profiler 的 README 文档](https://github.com/async-profiler/async-profiler#readme) 以及 [async-profiler 的 Github Discussions](https://github.com/async-profiler/async-profiler/discussions) 等材料。
 
 例如，以下命令中，`-s` 将输出中的类名称指定为简短格式，`-g` 显示方法的完整签名，`-a` 标注出 Java 方法，`-l` 为原生方法增加库名称，`--title` 为生成火焰图页面指定标题，`--minwidth` 将过滤火焰图中宽度为 15% 以下的帧，`--reverse` 将火焰图倒置。
 
@@ -376,14 +376,14 @@ profiler start --loop 1h -f /var/log/profile-%t.jfr
 profiler start --timeout 300s
 ```
 
-这个选项指定 profiling 自动在多久后停止。该选项和 `--loop` 选项的格式一致，可以是时间点，也可以是一个时间间隔。这两个选项都是用于 `start` action。可参考 [async-profiler docs在新窗口打开](https://github.com/async-profiler/async-profiler/blob/master/docs/ProfilerOptions.md) 了解更多信息。
+这个选项指定 profiling 自动在多久后停止。该选项和 `--loop` 选项的格式一致，可以是时间点，也可以是一个时间间隔。这两个选项都是用于 `start` action。可参考 [async-profiler docs](https://github.com/async-profiler/async-profiler/blob/master/docs/ProfilerOptions.md) 了解更多信息。
 
 ## [#](#wall-选项) `--wall` 选项
 
 通过 --wall 选项，可以同时进行 CPU 和 Wall Clock 的性能分析。
 
 1. 这种联合分析有助于更全面地识别和理解应用程序的性能瓶颈。2. 允许用户独立于 CPU 分析设置 Wall Clock 分析的采样间隔。比如，可以通过设置 -e cpu -i 10 --wall 200，将 CPU 采样间隔设为 10 毫秒，墙钟采样间隔设为 200 毫秒。3. 联合进行 CPU 和 Wall Clock 分析时，输出格式必须设置为 jfr。这一格式支持记录线程的状态信息（如 STATE_RUNNABLE 或 STATE_SLEEPING），从而区分不同类型的采样事件。
-可参考 [async-profiler Github pr#740在新窗口打开](https://github.com/async-profiler/async-profiler/issues/740) 了解更多信息。
+可参考 [async-profiler Github pr#740](https://github.com/async-profiler/async-profiler/issues/740) 了解更多信息。
 
 影响：
 
@@ -405,7 +405,7 @@ profiler start -e cpu -i 10 --wall 100 -f out.jfr
 - 容器友好：默认在容器中可用。
 - 低资源消耗：不消耗文件描述符。
 
-**请注意，`ctimer` 事件目前仅在 `Linux` 上支持，不支持 `macOS`。** 可参考 [async-profiler Github Issues在新窗口打开](https://github.com/async-profiler/async-profiler/issues/855) 了解更多信息。
+**请注意，`ctimer` 事件目前仅在 `Linux` 上支持，不支持 `macOS`。** 可参考 [async-profiler Github Issues](https://github.com/async-profiler/async-profiler/issues/855) 了解更多信息。
 
 示例：
 
@@ -419,7 +419,7 @@ profiler start -e ctimer -o jfr -f ./out-test.jfr
 
 vtable 特性可以在`vtable stub` 或 `itable stub` 之上添加一个伪帧，显示实际调用的对象类型。这有助于清楚地了解在特定调用点，不同接收者的比例。
 
-该特性默认禁用，可以通过 `-F vtable` 选项启用（或使用 `features=vtable`）。 可参考 [async-profiler Github Issues在新窗口打开](https://github.com/async-profiler/async-profiler/issues/736) 了解更多信息。
+该特性默认禁用，可以通过 `-F vtable` 选项启用（或使用 `features=vtable`）。 可参考 [async-profiler Github Issues](https://github.com/async-profiler/async-profiler/issues/736) 了解更多信息。
 
 示例：
 
@@ -433,7 +433,7 @@ profiler start -F vtable
 
 `comptask` 特性可以在 `C1/C2` 的堆栈跟踪中添加一个虚拟帧，显示当前正在编译的任务，即正在编译的 Java 方法。
 
-该特性默认禁用，可以通过`-F comptask` 选项启用（或使用 `features=comptask`）。 可参考 [async-profiler Github Issues在新窗口打开](https://github.com/async-profiler/async-profiler/issues/777) 了解更多信息。
+该特性默认禁用，可以通过`-F comptask` 选项启用（或使用 `features=comptask`）。 可参考 [async-profiler Github Issues](https://github.com/async-profiler/async-profiler/issues/777) 了解更多信息。
 
 示例：
 
@@ -445,7 +445,7 @@ profiler start -F comptask
 
 `profiler` 使用 `POSIX` 信号来进行性能分析。默认情况下，`SIGPROF` 用于 `CPU` 分析，`SIGVTALRM` 用于 `Wall-Clock` 分析。然而，如果应用程序也使用这些信号，或者希望同时运行多个 `profiler` 实例，这可能会导致信号冲突。
 
-现在，可以使用 `signal` 参数来配置用于分析的信号，以避免冲突。 可参考 [async-profiler Github Issues在新窗口打开](https://github.com/async-profiler/async-profiler/issues/759) 了解更多信息。
+现在，可以使用 `signal` 参数来配置用于分析的信号，以避免冲突。 可参考 [async-profiler Github Issues](https://github.com/async-profiler/async-profiler/issues/759) 了解更多信息。
 
 语法
 
@@ -472,7 +472,7 @@ profiler start --clock <tsc|monotonic>
 参数
 
 - `tsc`：使用 CPU 的时间戳计数器（`RDTSC`）。这是默认选项，提供高精度的时间戳。
-- `monotonic`：使用操作系统的单调时钟（`CLOCK_MONOTONIC`）。这有助于在多种数据源之间对齐时间戳。 可参考 [async-profiler Github Issues在新窗口打开](https://github.com/async-profiler/async-profiler/issues/723) 了解更多信息。
+- `monotonic`：使用操作系统的单调时钟（`CLOCK_MONOTONIC`）。这有助于在多种数据源之间对齐时间戳。 可参考 [async-profiler Github Issues](https://github.com/async-profiler/async-profiler/issues/723) 了解更多信息。
 
 示例 :
 
@@ -491,7 +491,7 @@ profiler start --clock monotonic
 
 在 Java 20 及更早的版本中，编译器为 `lambda` 表达式生成的方法名称包含唯一的数字后缀。例如，同一代码位置定义的 `lambda` 表达式，可能会生成多个不同的帧名称，因为每个 `lambda` 方法的名称都会附加一个唯一的数字后缀（如 `lambda$method$0`、`lambda$method$1` 等）。这会导致逻辑上相同的堆栈无法在火焰图中合并，增加了性能分析的复杂性。
 
-为了解决这个问题，`profiler` 新增了 `--norm` 选项，可以在生成输出时自动规范化方法名称，去除这些数字后缀，使相同的堆栈能够正确地合并。 可参考 [async-profiler Github Issues在新窗口打开](https://github.com/async-profiler/async-profiler/issues/832) 了解更多信息。
+为了解决这个问题，`profiler` 新增了 `--norm` 选项，可以在生成输出时自动规范化方法名称，去除这些数字后缀，使相同的堆栈能够正确地合并。 可参考 [async-profiler Github Issues](https://github.com/async-profiler/async-profiler/issues/832) 了解更多信息。
 
 **示例:**
 

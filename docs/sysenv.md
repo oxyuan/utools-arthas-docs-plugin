@@ -1,4 +1,4 @@
-[`sysenv`在线教程在新窗口打开](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-sysenv)
+[`sysenv`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-sysenv)
 
 > 提示
 > 查看当前 JVM 的环境属性(`System Environment Variables`)

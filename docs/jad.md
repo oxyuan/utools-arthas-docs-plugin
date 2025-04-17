@@ -1,4 +1,4 @@
-[`jad`在线教程在新窗口打开](https://arthas.aliyun.com/doc/arthas-tutorials?language=cn&id=command-jad)
+[`jad`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials?language=cn&id=command-jad)
 
 > 提示
 > 反编译指定已加载类的源码

@@ -1,4 +1,4 @@
-[`tee`在线教程在新窗口打开](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-tee)
+[`tee`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-tee)
 
 > 提示
 > 类似传统的`tee`命令, 用于读取标准输入的数据，并将其内容输出成文件。

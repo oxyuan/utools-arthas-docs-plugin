@@ -1,4 +1,4 @@
-[`ognl`在线教程在新窗口打开](https://arthas.aliyun.com/doc/arthas-tutorials?language=cn&id=command-ognl)
+[`ognl`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials?language=cn&id=command-ognl)
 
 > 提示
 > 执行 ognl 表达式
@@ -15,8 +15,8 @@
 
 ## [#](#使用参考) 使用参考
 
-- OGNL 特殊用法请参考：[https://github.com/alibaba/arthas/issues/71在新窗口打开](https://github.com/alibaba/arthas/issues/71)
-- OGNL 表达式官方指南：[https://commons.apache.org/dormant/commons-ognl/language-guide.html在新窗口打开](https://commons.apache.org/dormant/commons-ognl/language-guide.html)
+- OGNL 特殊用法请参考：[https://github.com/alibaba/arthas/issues/71](https://github.com/alibaba/arthas/issues/71)
+- OGNL 表达式官方指南：[https://commons.apache.org/dormant/commons-ognl/language-guide.html](https://commons.apache.org/dormant/commons-ognl/language-guide.html)
 
 调用静态函数：
 

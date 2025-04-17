@@ -2,8 +2,30 @@ const fs = require('fs');
 const path = require('path');
 const marked = require('marked');
 
-// 配置 marked 以支持代码高亮
+// 创建自定义渲染器来处理图片路径
+const renderer = new marked.Renderer();
+
+// 自定义图片渲染器，处理相对路径
+renderer.image = function(href, title, text) {
+  // 处理相对路径，如 ../images/xxx.png
+  if (href && href.startsWith('../')) {
+    // 将 ../images/xxx.png 转换为 ./images/xxx.png
+    href = href.replace(/^\.\.\//, './');
+  }
+
+  // 构建标准的 img 标签，使用绝对路径
+  if (href && !href.startsWith('http')) {
+    // 使用 __dirname 构建绝对路径
+    const absolutePath = path.join(__dirname, href);
+    return `<img src="${absolutePath}" alt="${text || ''}" title="${title || ''}" />`;
+  } else {
+    return `<img src="${href}" alt="${text || ''}" title="${title || ''}" />`;
+  }
+};
+
+// 配置 marked 以支持代码高亮和自定义渲染器
 marked.setOptions({
+  renderer: renderer,
   highlight: function(code, lang) {
     // 增强的代码高亮实现
     if (lang === 'java') {

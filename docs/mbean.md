@@ -1,4 +1,4 @@
-[`mbean`在线教程在新窗口打开](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-mbean)
+[`mbean`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-mbean)
 
 > 提示
 > 查看 Mbean 的信息
@@ -42,7 +42,7 @@ mbean java.lang:type=Th*
 ```
 
 > 注意
-> 注意：ObjectName 的匹配规则与正常的通配符存在差异，详细参见：[javax.management.ObjectName在新窗口打开](https://docs.oracle.com/javase/8/docs/api/javax/management/ObjectName.html?is-external=true)
+> 注意：ObjectName 的匹配规则与正常的通配符存在差异，详细参见：[javax.management.ObjectName](https://docs.oracle.com/javase/8/docs/api/javax/management/ObjectName.html?is-external=true)
 通配符匹配特定的属性字段：
 
 ```

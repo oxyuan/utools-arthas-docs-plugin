@@ -1,4 +1,4 @@
-[`thread`在线教程在新窗口打开](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-thread)
+[`thread`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-thread)
 
 > 提示
 > 查看当前线程信息，查看线程的堆栈
@@ -26,7 +26,7 @@
 > 注意
 > 注意： 这个统计也会产生一定的开销（JDK 这个接口本身开销比较大），因此会看到 as 的线程占用一定的百分比，为了降低统计自身的开销带来的影响，可以把采样间隔拉长一些，比如 5000 毫秒。
 > 提示
-> 另外一种查看 Java 进程的线程 cpu 使用率方法：可以使用[`show-busy-java-threads`在新窗口打开](https://github.com/oldratlee/useful-scripts/blob/dev-2.x/docs/java.md#-show-busy-java-threads)这个脚本。
+> 另外一种查看 Java 进程的线程 cpu 使用率方法：可以使用[`show-busy-java-threads`](https://github.com/oldratlee/useful-scripts/blob/dev-2.x/docs/java.md#-show-busy-java-threads)这个脚本。
 ## [#](#使用参考) 使用参考
 
 ### [#](#支持一键展示当前最忙的前-n-个线程并打印堆栈) 支持一键展示当前最忙的前 N 个线程并打印堆栈：

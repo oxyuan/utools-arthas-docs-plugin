@@ -1,4 +1,4 @@
-[`vmoption`在线教程在新窗口打开](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-vmoption)
+[`vmoption`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-vmoption)
 
 > 提示
 > 查看，更新 VM 诊断相关的参数

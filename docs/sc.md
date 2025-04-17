@@ -1,4 +1,4 @@
-[`sc`在线教程在新窗口打开](https://arthas.aliyun.com/doc/arthas-tutorials?language=cn&id=command-sc)
+[`sc`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials?language=cn&id=command-sc)
 
 > 提示
 > 查看 JVM 已加载的类信息

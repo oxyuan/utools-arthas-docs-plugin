@@ -1,8 +1,8 @@
-[`mc-retransform`在线教程在新窗口打开](https://arthas.aliyun.com/doc/arthas-tutorials?language=cn&id=command-mc-retransform)
+[`mc-retransform`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials?language=cn&id=command-mc-retransform)
 
 > 提示
 > 加载外部的`.class`文件，retransform jvm 已加载的类。
-参考：[Instrumentation#retransformClasses在新窗口打开](https://docs.oracle.com/javase/8/docs/api/java/lang/instrument/Instrumentation.html#retransformClasses-java.lang.Class...-)
+参考：[Instrumentation#retransformClasses](https://docs.oracle.com/javase/8/docs/api/java/lang/instrument/Instrumentation.html#retransformClasses-java.lang.Class...-)
 
 ## [#](#使用参考) 使用参考
 

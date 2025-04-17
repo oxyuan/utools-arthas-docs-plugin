@@ -1,4 +1,4 @@
-[`tt`在线教程在新窗口打开](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-tt)
+[`tt`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-tt)
 
 > 提示
 > 方法执行数据的时空隧道，记录下指定方法每次调用的入参和返回信息，并能对这些不同的时间下调用进行观测
@@ -219,7 +219,7 @@ Affect(class count: 1 , method count: 1) cost in 56 ms, listenerId: 1
 
 注意这里使用 `com.taobao.arthas.core.advisor.Advice#getLoader`加载,使用精确`classloader` [ognl](https://arthas.aliyun.com/doc/ognl.html)更好。
 
-高级用法 [获取 spring context 调用 bean 方法在新窗口打开](https://github.com/alibaba/arthas/issues/482)
+高级用法 [获取 spring context 调用 bean 方法](https://github.com/alibaba/arthas/issues/482)
 
 - 需要强调的点
 

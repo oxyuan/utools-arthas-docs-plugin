@@ -1,8 +1,8 @@
-[`vmtool`在线教程在新窗口打开](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-vmtool)
+[`vmtool`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-vmtool)
 
 `vmtool` 利用`JVMTI`接口，实现查询内存对象，强制 GC 等功能。
 
-- [JVM Tool Interface在新窗口打开](https://docs.oracle.com/javase/8/docs/platform/jvmti/jvmti.html)
+- [JVM Tool Interface](https://docs.oracle.com/javase/8/docs/platform/jvmti/jvmti.html)
 
 ## [#](#获取对象) 获取对象
 

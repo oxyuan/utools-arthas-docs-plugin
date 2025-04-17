@@ -1,4 +1,4 @@
-[`jvm`在线教程在新窗口打开](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-jvm)
+[`jvm`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-jvm)
 
 > 提示
 > 查看当前 JVM 信息

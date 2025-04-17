@@ -1,4 +1,4 @@
-[`monitor`在线教程在新窗口打开](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-monitor)
+[`monitor`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-monitor)
 
 > 提示
 > 方法执行监控

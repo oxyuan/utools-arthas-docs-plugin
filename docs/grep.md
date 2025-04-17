@@ -1,4 +1,4 @@
-[`grep`在线教程在新窗口打开](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-grep)
+[`grep`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-grep)
 
 > 提示
 > 类似传统的`grep`命令。

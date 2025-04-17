@@ -1,4 +1,4 @@
-[`keymap`在线教程在新窗口打开](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-keymap)
+[`keymap`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-keymap)
 
 `keymap`命令输出当前的快捷键映射表：
 

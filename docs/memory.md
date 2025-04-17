@@ -2,8 +2,8 @@
 
 具体字段信息，参考：
 
-- [MemoryMXBean#getHeapMemoryUsage()在新窗口打开](https://docs.oracle.com/en/java/javase/11/docs/api/java.management/java/lang/management/MemoryMXBean.html#getHeapMemoryUsage())
-- [MemoryMXBean#getNonHeapMemoryUsage()在新窗口打开](https://docs.oracle.com/en/java/javase/11/docs/api/java.management/java/lang/management/MemoryMXBean.html#getHeapMemoryUsage())
+- [MemoryMXBean#getHeapMemoryUsage()](https://docs.oracle.com/en/java/javase/11/docs/api/java.management/java/lang/management/MemoryMXBean.html#getHeapMemoryUsage())
+- [MemoryMXBean#getNonHeapMemoryUsage()](https://docs.oracle.com/en/java/javase/11/docs/api/java.management/java/lang/management/MemoryMXBean.html#getHeapMemoryUsage())
 
 具体代码：
 

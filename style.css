@@ -137,6 +137,18 @@ body, html {
   border-bottom-color: #91d5ff;
 }
 
+.notification.warning {
+  background-color: #fffbe6;
+  color: #faad14;
+  border-bottom-color: #ffe58f;
+}
+
+.notification.success {
+  background-color: #f6ffed;
+  color: #52c41a;
+  border-bottom-color: #b7eb8f;
+}
+
 .content {
   flex: 1;
   padding: 25px 30px;
@@ -216,6 +228,21 @@ body, html {
   text-decoration: underline;
 }
 
+/* 命令链接样式 */
+.doc-content a.command-link {
+  color: #22863a;
+  font-weight: 500;
+  border-bottom: 1px dashed #22863a;
+  text-decoration: none;
+}
+
+.doc-content a.command-link:hover {
+  color: #1a7f37;
+  background-color: #f0fff4;
+  border-bottom: 1px solid #1a7f37;
+  text-decoration: none;
+}
+
 .doc-content code {
   background-color: rgba(27, 31, 35, 0.05);
   padding: 0.2em 0.4em;
@@ -255,27 +282,59 @@ body, html {
   line-height: 1.45;
 }
 
+/* 关键字高亮 */
 .code-block .keyword {
   color: #d73a49;
   font-weight: bold;
 }
 
+/* 命令高亮 */
 .code-block .command {
   color: #0366d6;
 }
 
+/* Bash命令高亮 */
 .code-block .bash-command {
   color: #6f42c1;
   font-weight: bold;
 }
 
-.code-block.java .string {
+/* 字符串高亮 */
+.code-block .string {
   color: #032f62;
 }
 
-.code-block.java .comment {
+/* 注释高亮 */
+.code-block .comment {
   color: #6a737d;
   font-style: italic;
+}
+
+/* 数字高亮 */
+.code-block .number {
+  color: #005cc5;
+}
+
+/* 注解高亮 */
+.code-block .annotation {
+  color: #e36209;
+}
+
+/* Arthas命令高亮 */
+.code-block .arthas-command {
+  color: #22863a;
+  font-weight: bold;
+}
+
+/* 命令行提示符高亮 */
+.code-block .prompt {
+  color: #959da5;
+  font-weight: bold;
+}
+
+/* 命令行选项高亮 */
+.code-block .option {
+  color: #e36209;
 }
 
 /* 暗黑模式下的代码高亮 */
@@ -292,12 +351,34 @@ body, html {
     color: #d2a8ff;
   }
 
-  .code-block.java .string {
+  .code-block .string {
     color: #a5d6ff;
   }
 
-  .code-block.java .comment {
+  .code-block .comment {
     color: #8b949e;
+  }
+
+  .code-block .number {
+    color: #79c0ff;
+  }
+
+  .code-block .annotation {
+    color: #ffa657;
+  }
+
+  .code-block .arthas-command {
+    color: #7ee787;
+    font-weight: bold;
+  }
+
+  .code-block .prompt {
+    color: #8b949e;
+    font-weight: bold;
+  }
+
+  .code-block .option {
+    color: #ffa657;
   }
 }
 
@@ -424,6 +505,17 @@ body, html {
 
   .doc-content a {
     color: #58a6ff;
+  }
+
+  .doc-content a.command-link {
+    color: #7ee787;
+    border-bottom-color: #7ee787;
+  }
+
+  .doc-content a.command-link:hover {
+    color: #56d364;
+    background-color: rgba(46, 160, 67, 0.15);
+    border-bottom-color: #56d364;
   }
 
   .doc-content code {
@@ -688,6 +780,18 @@ body, html {
     background-color: #0d2b45;
     color: #4fa3e3;
     border-bottom-color: #094771;
+  }
+
+  .notification.warning {
+    background-color: #2b2111;
+    color: #faad14;
+    border-bottom-color: #443111;
+  }
+
+  .notification.success {
+    background-color: #162312;
+    color: #73d13d;
+    border-bottom-color: #274916;
   }
 
   .content-container {

@@ -1,4 +1,4 @@
-[`dashboard`在线教程在新窗口打开](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-dashboard)
+[`dashboard`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-dashboard)
 
 > 提示
 > 当前系统的实时数据面板，按 ctrl+c 退出。

@@ -1,4 +1,4 @@
-[`jfr`在线教程在新窗口打开](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-jfr)
+[`jfr`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-jfr)
 
 > 提示
 > Java Flight Recorder (JFR) 是一种用于收集有关正在运行的 Java 应用程序的诊断和分析数据的工具。它集成到 Java 虚拟机 (JVM) 中，几乎不会造成性能开销，因此即使在负载较重的生产环境中也可以使用。
@@ -101,7 +101,7 @@ Stop recording 1, The result will be written to:
 
 ## [#](#通过浏览器查看-arthas-output-下面-jfr-记录的结果) 通过浏览器查看 arthas-output 下面 JFR 记录的结果
 
-默认情况下，arthas 使用 8563 端口，则可以打开： [http://localhost:8563/arthas-output/在新窗口打开](http://localhost:8563/arthas-output/) 查看到`arthas-output`目录下面的 JFR 记录结果：
+默认情况下，arthas 使用 8563 端口，则可以打开： [http://localhost:8563/arthas-output/](http://localhost:8563/arthas-output/) 查看到`arthas-output`目录下面的 JFR 记录结果：
 
 
 生成的结果可以用支持 jfr 格式的工具来查看。比如：
