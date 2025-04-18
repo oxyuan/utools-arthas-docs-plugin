@@ -191,41 +191,137 @@ function showNotification(message, type = '', duration = 3000) {
   }, duration);
 }
 
-// 版本切换功能
-const versionButton = document.getElementById('versionButton');
-const versionDropdown = document.getElementById('versionDropdown');
-let currentVersion = '4.0.4';
+// 文档类别切换功能
+const categoryButton = document.getElementById('categoryButton');
+const categoryDropdown = document.getElementById('categoryDropdown');
+let currentCategory = 'all';
+let docGroups = [];
+
+// 加载文档分组
+function loadDocGroups() {
+  try {
+    const groupsPath = path.join(__dirname, 'docs-group.json');
+    if (fs.existsSync(groupsPath)) {
+      docGroups = JSON.parse(fs.readFileSync(groupsPath, 'utf-8'));
+
+      // 添加分组选项到下拉菜单
+      docGroups.forEach(group => {
+        const option = document.createElement('a');
+        option.href = '#';
+        option.setAttribute('data-category', group.name);
+        option.textContent = group.name;
+        categoryDropdown.appendChild(option);
+      });
+    } else {
+      console.warn('文档分组文件不存在:', groupsPath);
+    }
+  } catch (error) {
+    console.error('加载文档分组失败:', error);
+  }
+}
+
+// 根据分组过滤菜单
+function filterMenuByCategory(category) {
+  // 如果是全部文档，显示所有项
+  if (category === 'all') {
+    initMenu();
+    return;
+  }
+
+  // 查找对应的分组
+  const group = docGroups.find(g => g.name === category);
+  if (!group) {
+    console.warn('未找到分组:', category);
+    return;
+  }
+
+  // 根据分组的 filter 属性过滤菜单
+  const menu = document.getElementById('menu');
+  menu.innerHTML = '';
+
+  group.filter.forEach((key, index) => {
+    if (docs[key]) {
+      const item = document.createElement('div');
+      item.className = 'menu-item';
+      item.dataset.key = key;
+
+      // 创建标题元素
+      const title = document.createElement('div');
+      title.className = 'menu-item-title';
+      title.textContent = key;
+
+      // 创建描述元素
+      const desc = document.createElement('div');
+      desc.className = 'menu-item-desc';
+      desc.textContent = docs[key].description;
+
+      // 添加到菜单项
+      item.appendChild(title);
+      item.appendChild(desc);
+
+      item.onclick = () => showContent(key);
+      item.tabIndex = index;
+      menu.appendChild(item);
+
+      // 如果是当前活动项，添加活动类
+      if (currentActiveKey === key) {
+        item.classList.add('active');
+      }
+    }
+  });
+}
 
 // 点击按钮显示下拉菜单
-versionButton.addEventListener('click', (e) => {
+categoryButton.addEventListener('click', (e) => {
   e.stopPropagation();
-  // 当前只有一个版本，显示提示信息
-  showNotification(`当前仅支持 Arthas ${currentVersion} 版本文档`, 'info');
-});
+  categoryDropdown.classList.toggle('show');
 
-// 点击下拉菜单项
-versionDropdown.addEventListener('click', (e) => {
-  if (e.target.tagName === 'A') {
-    e.preventDefault();
-    const version = e.target.getAttribute('data-version');
-    if (version !== currentVersion) {
-      currentVersion = version;
-      versionButton.textContent = `切换版本 (当前: ${currentVersion})`;
-      showNotification(`已切换到 Arthas ${currentVersion} 文档`, 'success');
-    } else {
-      showNotification(`当前已经是 Arthas ${currentVersion} 文档`, 'info');
-    }
-    versionDropdown.classList.remove('show');
+  // 如果下拉菜单已经显示，添加点击其他地方关闭的事件监听器
+  if (categoryDropdown.classList.contains('show')) {
+    const closeDropdown = () => {
+      categoryDropdown.classList.remove('show');
+      document.removeEventListener('click', closeDropdown);
+    };
+
+    // 使用 setTimeout 确保当前点击不会触发关闭
+    setTimeout(() => {
+      document.addEventListener('click', closeDropdown);
+    }, 0);
   }
 });
 
-// 点击其他地方关闭下拉菜单
-document.addEventListener('click', () => {
-  versionDropdown.classList.remove('show');
+// 点击下拉菜单项
+categoryDropdown.addEventListener('click', (e) => {
+  if (e.target.tagName === 'A') {
+    e.preventDefault();
+    const category = e.target.getAttribute('data-category');
+    if (category !== currentCategory) {
+      currentCategory = category;
+      categoryButton.textContent = `${category === 'all' ? '全部文档' : category}`;
+
+      // 更新菜单项选中状态
+      document.querySelectorAll('#categoryDropdown a').forEach(a => {
+        a.classList.remove('active');
+      });
+      e.target.classList.add('active');
+
+      // 过滤菜单
+      filterMenuByCategory(category);
+
+      showNotification(`已切换到${category === 'all' ? '全部文档' : `"${category}"分组`}`, 'success');
+    }
+    categoryDropdown.classList.remove('show');
+  }
+});
+
+// 点击下拉菜单项不应该关闭下拉菜单
+categoryDropdown.addEventListener('click', (e) => {
+  e.stopPropagation();
 });
 
 // 初始化
 loadDocs();
+loadDocGroups();
 initMenu();
 // 默认显示第一个文档
 if (Object.keys(docs).length > 0) {

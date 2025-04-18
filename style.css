@@ -627,19 +627,19 @@ body, html {
   }
 }
 
-.version-switcher {
+.category-switcher {
   padding: 8px 10px;
   border-bottom: 1px solid #e0e0e0;
   flex-shrink: 0;
 }
 
-.version-dropdown {
+.category-dropdown {
   position: relative;
   display: inline-block;
   width: 100%;
 }
 
-#versionButton {
+#categoryButton {
   width: 100%;
   padding: 8px 12px;
   border: 1px solid #ddd;
@@ -656,19 +656,19 @@ body, html {
   position: relative;
 }
 
-#versionButton::after {
+#categoryButton::after {
   content: '\25BC';
   font-size: 10px;
   margin-left: 8px;
   opacity: 0.7;
 }
 
-#versionButton:hover {
+#categoryButton:hover {
   background-color: #e6e6e6;
   border-color: #ccc;
 }
 
-#versionButton:active {
+#categoryButton:active {
   background-color: #e0e0e0;
 }
 
@@ -684,6 +684,10 @@ body, html {
   overflow: hidden;
 }
 
+.dropdown-content.show {
+  display: block;
+}
+
 .dropdown-content a {
   color: #333;
   padding: 10px 12px;
@@ -691,6 +695,11 @@ body, html {
   display: block;
   font-size: 13px;
   transition: background-color 0.2s;
+  border-bottom: 1px solid #eee;
+}
+
+.dropdown-content a:last-child {
+  border-bottom: none;
 }
 
 .dropdown-content a:hover {
@@ -713,24 +722,24 @@ body, html {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* 暗黑模式下的版本切换按钮 */
+/* 暗黑模式下的类别切换按钮 */
 @media (prefers-color-scheme: dark) {
-  .version-switcher {
+  .category-switcher {
     border-bottom-color: #333;
   }
 
-  #versionButton {
+  #categoryButton {
     background-color: #2d2d2d;
     border-color: #444;
     color: #e1e1e1;
   }
 
-  #versionButton:hover {
+  #categoryButton:hover {
     background-color: #3a3a3a;
     border-color: #555;
   }
 
-  #versionButton:active {
+  #categoryButton:active {
     background-color: #333;
   }
 

@@ -5,7 +5,7 @@
   "features": [
     {
       "code": "arthas",
-      "explain": "Arthas 4.0.4 文档",
+      "explain": "Arthas 帮助文档",
       "cmds": ["arthas", "docs", "java诊断"]
     }
   ]
