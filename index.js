@@ -4,6 +4,7 @@ const { fs, path, marked, __dirname } = window.nodeAPI;
 // 修改 docs 目录路径为相对路径
 const docsDir = path.join(__dirname, 'docs');
 let docs = {};
+let menuItemsElements = []; // <--- 添加：用于存储菜单项DOM元素
 
 // 加载文档
 function loadDocs() {
@@ -38,6 +39,7 @@ function loadDocs() {
 function initMenu() {
   const menu = document.getElementById('menu');
   menu.innerHTML = '';
+  menuItemsElements = []; // <--- 添加：清空数组
   const keys = Object.keys(docs);
 
   keys.forEach((key, index) => {
@@ -62,6 +64,7 @@ function initMenu() {
     item.onclick = () => showContent(key);
     item.tabIndex = index; // 使菜单项可聚焦
     menu.appendChild(item);
+    menuItemsElements.push(item); // <--- 添加：存储菜单项元素
 
     // 如果是当前活动项，添加活动类
     if (currentActiveKey === key) {
@@ -95,6 +98,37 @@ function initMenu() {
 // 当前活动的命令键
 let currentActiveKey = '';
 
+// <--- 添加：新的搜索处理函数 -->
+function handleCommandSearch(action) {
+  console.log('[ArthasDocs|Search] handleCommandSearch called with action:', action);
+  
+  if (!action || typeof action.text === 'undefined') {
+    console.warn('[ArthasDocs|Search] Invalid action or action.text is undefined. Aborting search.');
+    // Optionally, clear filter or show all items if input is cleared/invalid
+    menuItemsElements.forEach(itemElement => {
+      itemElement.style.display = ''; // Show all
+    });
+    return;
+  }
+
+  const searchText = action.text;
+  const lowerSearchText = searchText.toLowerCase().trim();
+  console.log('[ArthasDocs|Search] lowerSearchText:', lowerSearchText);
+  console.log('[ArthasDocs|Search] Current menuItemsElements count:', menuItemsElements.length);
+
+  menuItemsElements.forEach((itemElement, index) => {
+    const commandKey = itemElement.dataset.key ? itemElement.dataset.key.toLowerCase() : '';
+
+    if (commandKey.includes(lowerSearchText)) {
+      itemElement.style.display = '';
+    } else {
+      itemElement.style.display = 'none';
+    }
+  });
+  console.log('[ArthasDocs|Search] handleCommandSearch finished.');
+}
+// <--- 结束：新的搜索处理函数 -->
+
 // 显示内容
 function showContent(key) {
   const content = document.getElementById('content');
@@ -107,6 +141,7 @@ function showContent(key) {
 
   // 记录当前活动的命令键
   currentActiveKey = key;
+  localStorage.setItem('arthasDocsLastActiveKey', key); // <--- 添加：保存最后活动的Key
 
   // 处理表格，将其包裹在滚动容器中
   content.querySelectorAll('.doc-content table').forEach(table => {
@@ -238,6 +273,7 @@ function filterMenuByCategory(category) {
   // 根据分组的 filter 属性过滤菜单
   const menu = document.getElementById('menu');
   menu.innerHTML = '';
+  menuItemsElements = []; // <--- 添加：清空 menuItemsElements 以便搜索功能正确工作
 
   group.filter.forEach((key, index) => {
     if (docs[key]) {
@@ -262,6 +298,7 @@ function filterMenuByCategory(category) {
       item.onclick = () => showContent(key);
       item.tabIndex = index;
       menu.appendChild(item);
+      menuItemsElements.push(item); // <--- 添加：填充 menuItemsElements
 
       // 如果是当前活动项，添加活动类
       if (currentActiveKey === key) {
@@ -319,11 +356,61 @@ categoryDropdown.addEventListener('click', (e) => {
   e.stopPropagation();
 });
 
-// 初始化
-loadDocs();
-loadDocGroups();
-initMenu();
-// 默认显示第一个文档
-if (Object.keys(docs).length > 0) {
-  showContent(Object.keys(docs)[0]);
-}
+// <--- 修改：DOMContentLoaded 事件监听器 -->
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('[ArthasDocs] DOMContentLoaded event fired.');
+  loadDocs();
+  loadDocGroups(); 
+  
+  initMenu(); 
+
+  // 设置子输入框用于搜索
+  console.log('[ArthasDocs] Attempting to set sub input with delay...');
+  if (window.utools) {
+    console.log('[ArthasDocs] window.utools object found.', window.utools);
+    if (typeof window.utools.setSubInput === 'function') {
+      console.log('[ArthasDocs] window.utools.setSubInput is a function. Scheduling call.');
+      setTimeout(() => {
+        console.log('[ArthasDocs] setTimeout: Calling utools.setSubInput now.');
+        try {
+          utools.setSubInput(handleCommandSearch, '搜索命令...', true);
+          console.log('[ArthasDocs] utools.setSubInput called successfully via setTimeout.');
+        } catch (e) {
+          console.error('[ArthasDocs] Error calling utools.setSubInput via setTimeout:', e);
+        }
+      }, 100);
+    } else {
+      console.warn('[ArthasDocs] window.utools.setSubInput is NOT a function.');
+    }
+  } else {
+    console.warn('[ArthasDocs] window.utools object NOT found. Using fallback input.');
+    // 为浏览器环境添加一个简单的后备输入框
+    const fallbackInput = document.createElement('input');
+    fallbackInput.type = 'text';
+    fallbackInput.placeholder = '搜索命令 (fallback)...';
+    fallbackInput.style.width = '90%';
+    fallbackInput.style.padding = '5px';
+    fallbackInput.style.margin = '10px auto';
+    fallbackInput.style.display = 'block';
+    fallbackInput.addEventListener('input', (e) => handleCommandSearch(e.target.value));
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar) {
+        sidebar.insertBefore(fallbackInput, sidebar.firstChild);
+    }
+  }
+
+  // 默认显示上次活动的文档或第一个文档
+  const keys = Object.keys(docs);
+  if (keys.length > 0) {
+    const lastActive = localStorage.getItem('arthasDocsLastActiveKey');
+    if (lastActive && docs[lastActive]) {
+      showContent(lastActive);
+      // 确保滚动到活动项
+      const activeItem = document.querySelector(`.menu-item[data-key="${lastActive}"]`);
+      if (activeItem) activeItem.scrollIntoView({ block: 'center' });
+    } else {
+      showContent(keys[0]);
+    }
+  }
+});
+// <--- 结束：修改后的 DOMContentLoaded -->
