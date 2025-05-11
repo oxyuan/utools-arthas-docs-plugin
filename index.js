@@ -112,6 +112,8 @@ function handleCommandSearch(action) {
       const firstKey = menuItemsElements[0].dataset.key;
       showContent(firstKey);
     }
+    // 退出全屏
+    document.body.classList.remove('fullscreen');
     return;
   }
 
@@ -119,6 +121,13 @@ function handleCommandSearch(action) {
   const lowerSearchText = searchText.toLowerCase().trim();
   console.log('[ArthasDocs|Search] lowerSearchText:', lowerSearchText);
   console.log('[ArthasDocs|Search] Current menuItemsElements count:', menuItemsElements.length);
+
+  // 判断是否需要全屏（输入内容以空格结尾）
+  if (searchText.endsWith(' ')) {
+    document.body.classList.add('fullscreen');
+  } else {
+    document.body.classList.remove('fullscreen');
+  }
 
   let firstMatchedKey = null;
   menuItemsElements.forEach((itemElement, index) => {
@@ -384,7 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
         console.log('[ArthasDocs] setTimeout: Calling utools.setSubInput now.');
         try {
-          utools.setSubInput(handleCommandSearch, '搜索命令...', true);
+          utools.setSubInput(handleCommandSearch, '搜索命令...空格全屏', true);
           console.log('[ArthasDocs] utools.setSubInput called successfully via setTimeout.');
         } catch (e) {
           console.error('[ArthasDocs] Error calling utools.setSubInput via setTimeout:', e);
