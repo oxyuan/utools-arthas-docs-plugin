@@ -104,10 +104,14 @@ function handleCommandSearch(action) {
   
   if (!action || typeof action.text === 'undefined') {
     console.warn('[ArthasDocs|Search] Invalid action or action.text is undefined. Aborting search.');
-    // Optionally, clear filter or show all items if input is cleared/invalid
     menuItemsElements.forEach(itemElement => {
-      itemElement.style.display = ''; // Show all
+      itemElement.style.display = '';
     });
+    // 搜索为空时，自动展示第一个命令文档
+    if (menuItemsElements.length > 0) {
+      const firstKey = menuItemsElements[0].dataset.key;
+      showContent(firstKey);
+    }
     return;
   }
 
@@ -116,15 +120,22 @@ function handleCommandSearch(action) {
   console.log('[ArthasDocs|Search] lowerSearchText:', lowerSearchText);
   console.log('[ArthasDocs|Search] Current menuItemsElements count:', menuItemsElements.length);
 
+  let firstMatchedKey = null;
   menuItemsElements.forEach((itemElement, index) => {
     const commandKey = itemElement.dataset.key ? itemElement.dataset.key.toLowerCase() : '';
-
     if (commandKey.includes(lowerSearchText)) {
       itemElement.style.display = '';
+      if (firstMatchedKey === null) {
+        firstMatchedKey = itemElement.dataset.key;
+      }
     } else {
       itemElement.style.display = 'none';
     }
   });
+  // 实时切换文档区为第一个匹配命令
+  if (firstMatchedKey) {
+    showContent(firstMatchedKey);
+  }
   console.log('[ArthasDocs|Search] handleCommandSearch finished.');
 }
 // <--- 结束：新的搜索处理函数 -->
@@ -141,7 +152,7 @@ function showContent(key) {
 
   // 记录当前活动的命令键
   currentActiveKey = key;
-  localStorage.setItem('arthasDocsLastActiveKey', key); // <--- 添加：保存最后活动的Key
+  // localStorage.setItem('arthasDocsLastActiveKey', key); // <--- 移除记忆功能
 
   // 处理表格，将其包裹在滚动容器中
   content.querySelectorAll('.doc-content table').forEach(table => {
@@ -384,7 +395,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   } else {
     console.warn('[ArthasDocs] window.utools object NOT found. Using fallback input.');
-    // 为浏览器环境添加一个简单的后备输入框
     const fallbackInput = document.createElement('input');
     fallbackInput.type = 'text';
     fallbackInput.placeholder = '搜索命令 (fallback)...';
@@ -392,25 +402,17 @@ document.addEventListener('DOMContentLoaded', () => {
     fallbackInput.style.padding = '5px';
     fallbackInput.style.margin = '10px auto';
     fallbackInput.style.display = 'block';
-    fallbackInput.addEventListener('input', (e) => handleCommandSearch(e.target.value));
+    fallbackInput.addEventListener('input', (e) => handleCommandSearch({ text: e.target.value }));
     const sidebar = document.querySelector('.sidebar');
     if (sidebar) {
         sidebar.insertBefore(fallbackInput, sidebar.firstChild);
     }
   }
 
-  // 默认显示上次活动的文档或第一个文档
+  // 默认显示第一个文档
   const keys = Object.keys(docs);
   if (keys.length > 0) {
-    const lastActive = localStorage.getItem('arthasDocsLastActiveKey');
-    if (lastActive && docs[lastActive]) {
-      showContent(lastActive);
-      // 确保滚动到活动项
-      const activeItem = document.querySelector(`.menu-item[data-key="${lastActive}"]`);
-      if (activeItem) activeItem.scrollIntoView({ block: 'center' });
-    } else {
-      showContent(keys[0]);
-    }
+    showContent(keys[0]);
   }
 });
 // <--- 结束：修改后的 DOMContentLoaded -->
