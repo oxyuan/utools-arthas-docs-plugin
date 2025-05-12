@@ -384,44 +384,25 @@ document.addEventListener('DOMContentLoaded', () => {
   
   initMenu(); 
 
-  // 设置子输入框用于搜索
-  console.log('[ArthasDocs] Attempting to set sub input with delay...');
-  if (window.utools) {
-    console.log('[ArthasDocs] window.utools object found.', window.utools);
-    if (typeof window.utools.setSubInput === 'function') {
-      console.log('[ArthasDocs] window.utools.setSubInput is a function. Scheduling call.');
-      setTimeout(() => {
-        console.log('[ArthasDocs] setTimeout: Calling utools.setSubInput now.');
-        try {
-          utools.setSubInput(handleCommandSearch, '搜索命令...空格全屏', true);
-          console.log('[ArthasDocs] utools.setSubInput called successfully via setTimeout.');
-        } catch (e) {
-          console.error('[ArthasDocs] Error calling utools.setSubInput via setTimeout:', e);
-        }
-      }, 100);
-    } else {
-      console.warn('[ArthasDocs] window.utools.setSubInput is NOT a function.');
-    }
-  } else {
-    console.warn('[ArthasDocs] window.utools object NOT found. Using fallback input.');
-    const fallbackInput = document.createElement('input');
-    fallbackInput.type = 'text';
-    fallbackInput.placeholder = '搜索命令 (fallback)...';
-    fallbackInput.style.width = '90%';
-    fallbackInput.style.padding = '5px';
-    fallbackInput.style.margin = '10px auto';
-    fallbackInput.style.display = 'block';
-    fallbackInput.addEventListener('input', (e) => handleCommandSearch({ text: e.target.value }));
-    const sidebar = document.querySelector('.sidebar');
-    if (sidebar) {
-        sidebar.insertBefore(fallbackInput, sidebar.firstChild);
-    }
-  }
+  // 移除 setSubInput 调用，改为 onPluginEnter 统一管理
+  // if (window.utools) {
+  //   ...
+  // }
+  // ... fallback input 保留 ...
 
   // 默认显示第一个文档
   const keys = Object.keys(docs);
   if (keys.length > 0) {
     showContent(keys[0]);
+  }
+
+  // uTools窗口每次激活都设置搜索框，解决窗口重用后搜索框丢失问题
+  if (window.utools && typeof window.utools.onPluginEnter === 'function') {
+    window.utools.onPluginEnter(() => {
+      setTimeout(() => {
+        utools.setSubInput(handleCommandSearch, '搜索命令...空格全屏', true);
+      }, 100);
+    });
   }
 });
 // <--- 结束：修改后的 DOMContentLoaded -->
