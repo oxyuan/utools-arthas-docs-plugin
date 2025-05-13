@@ -1,5 +1,8 @@
 const { fs, path, marked, __dirname } = window.nodeAPI;
 
+const PLACEHOLDER_TEXT = '搜索命令...空格全屏';
+let previousSearchText = ''; // 用于检测全屏状态转换和普通搜索内容变化
+let lastActiveKeyBeforeFullscreen = null; // 用于记住全屏前的选中项
 
 // 修改 docs 目录路径为相对路径
 const docsDir = path.join(__dirname, 'docs');
@@ -101,65 +104,225 @@ let currentActiveKey = '';
 
 // <--- 添加：新的搜索处理函数 -->
 function handleCommandSearch(action) {
-  console.log('[ArthasDocs|Search] handleCommandSearch called with action:', action);
-  
-  if (!action || typeof action.text === 'undefined') {
-    console.warn('[ArthasDocs|Search] Invalid action or action.text is undefined. Aborting search.');
+  const currentSearchText = action.text || '';
+  console.log(`[Search] Current: "${currentSearchText}", Previous: "${previousSearchText}", ActiveKey: "${currentActiveKey}"`);
+
+  // --- 修改：优先处理来自占位符或有效空输入的空格全屏意图 ---
+  const currentInputIsJustSpace = currentSearchText.trim() === '' && currentSearchText.length > 0 && currentSearchText.endsWith(' ');
+  const previousInputWasEffectivelyEmpty = previousSearchText.trim() === '' || previousSearchText === PLACEHOLDER_TEXT;
+
+  if (currentInputIsJustSpace && previousInputWasEffectivelyEmpty) {
+    console.log('[Search] Detected space on effectively empty input. Forcing fullscreen for active key:', currentActiveKey);
+    
+    lastActiveKeyBeforeFullscreen = currentActiveKey; 
+    
+    document.body.classList.add('fullscreen');
+    
+    if (docs[currentActiveKey]) {
+      showContent(currentActiveKey);
+    } else if (lastActiveKeyBeforeFullscreen && docs[lastActiveKeyBeforeFullscreen]) { 
+      showContent(lastActiveKeyBeforeFullscreen);
+    } else if (menuItemsElements.length > 0) { 
+        const firstItem = menuItemsElements.find(item => item.style.display !== 'none') || menuItemsElements[0];
+        if(firstItem) showContent(firstItem.dataset.key);
+    }
+
+    menuItemsElements.forEach(itemElement => {
+      itemElement.style.display = ''; 
+      const titleElement = itemElement.querySelector('.menu-item-title');
+      if (titleElement) titleElement.textContent = itemElement.dataset.key; 
+      
+      if (itemElement.dataset.key === currentActiveKey) {
+        itemElement.classList.add('active');
+      } else {
+        itemElement.classList.remove('active');
+      }
+    });
+
+    previousSearchText = currentSearchText; 
+    return; 
+  }
+  // --- 结束修改 ---
+
+  let isEffectivelyEmpty = (currentSearchText.trim() === '' || currentSearchText === PLACEHOLDER_TEXT);
+  // Consider previousSearchText initial state: '' is effectively empty.
+  let wasEffectivelyEmpty = (previousSearchText.trim() === '' || previousSearchText === PLACEHOLDER_TEXT);
+
+  if (isEffectivelyEmpty) {
     menuItemsElements.forEach(itemElement => {
       itemElement.style.display = '';
+      const titleElement = itemElement.querySelector('.menu-item-title');
+      if (titleElement) titleElement.textContent = itemElement.dataset.key; // Reset title
     });
-    // 搜索为空时，自动展示第一个命令文档
-    if (menuItemsElements.length > 0) {
-      const firstKey = menuItemsElements[0].dataset.key;
-      showContent(firstKey);
+    document.body.classList.remove('fullscreen');
+
+    // Case 1: Search just became effectively empty (e.g., cleared by user) OR it's the initial call with placeholder.
+    if (!wasEffectivelyEmpty || (currentSearchText === PLACEHOLDER_TEXT && previousSearchText.trim() === '')) {
+      console.log('[Search] Became effectively empty or initial placeholder call.');
+      // If current text is genuinely empty (not placeholder), set input to placeholder.
+      // Avoid redundant setSubInput if already placeholder.
+      if (currentSearchText.trim() === '' && currentSearchText !== PLACEHOLDER_TEXT && window.utools) {
+        utools.setSubInput(handleCommandSearch, PLACEHOLDER_TEXT, true);
+      }
+
+      // Show content: prefer current active if still valid, else first visible.
+      const currentActiveItem = menuItemsElements.find(item => item.dataset.key === currentActiveKey && item.style.display !== 'none');
+      if (currentActiveItem) {
+          showContent(currentActiveKey);
+      } else if (menuItemsElements.length > 0) {
+          const firstVisibleItem = menuItemsElements.find(item => item.style.display !== 'none');
+          if (firstVisibleItem) showContent(firstVisibleItem.dataset.key);
+      }
     }
-    // 退出全屏
-    exitFullscreen();
-    return;
+    // Case 2: Search was already effectively empty and remains so (e.g., space pressed on placeholder/empty input).
+    else { // This implies isEffectivelyEmpty && wasEffectivelyEmpty
+      console.log('[Search] Remained effectively empty. No content/selection change intended.');
+      // Safeguard: If input somehow became truly empty string (not placeholder), restore placeholder.
+      // This can happen if keydown preventDefault + uTools interaction clears it before this callback.
+      if (currentSearchText.trim() === '' && currentSearchText !== PLACEHOLDER_TEXT && window.utools) {
+         utools.setSubInput(handleCommandSearch, PLACEHOLDER_TEXT, true);
+      }
+      // IMPORTANT: Do NOT call showContent() here to change the displayed item or currentActiveKey.
+      // The existing selection and content should persist.
+    }
+
+    previousSearchText = currentSearchText; // Update previousSearchText to the current state
+    lastActiveKeyBeforeFullscreen = null; // Reset fullscreen memory
+    return; // Exit: all logic for effectively empty search is handled.
   }
 
-  const searchText = action.text;
-  const lowerSearchText = searchText.toLowerCase().trim();
-  console.log('[ArthasDocs|Search] lowerSearchText:', lowerSearchText);
-  console.log('[ArthasDocs|Search] Current menuItemsElements count:', menuItemsElements.length);
+  // --- Logic for non-effectively-empty search starts here ---
+  console.log('[Search] Processing non-empty search:', currentSearchText);
 
-  // 判断是否需要全屏（输入内容以空格结尾）
-  if (searchText.endsWith(' ')) {
-    document.body.classList.add('fullscreen');
-    // 优先显示当前选中的命令
-    if (currentActiveKey && docs[currentActiveKey]) {
-      showContent(currentActiveKey);
-    } else {
-      // 没有选中过命令时，回退到第一个匹配命令
-      let firstMatchedKey = null;
-      menuItemsElements.forEach((itemElement) => {
-        if (itemElement.style.display !== 'none' && !firstMatchedKey) {
-          firstMatchedKey = itemElement.dataset.key;
-        }
-      });
-      if (firstMatchedKey) showContent(firstMatchedKey);
+  const lowerSearchText = currentSearchText.toLowerCase().trim(); // Trim for filtering
+  let isNowFullscreen = currentSearchText.endsWith(' '); // Ends with actual space
+  let wasFullscreenClass = document.body.classList.contains('fullscreen');
+
+  if (isNowFullscreen) {
+    if (!wasFullscreenClass) {
+      console.log('[Search] Entering fullscreen. Saving active key:', currentActiveKey);
+      lastActiveKeyBeforeFullscreen = currentActiveKey; // Save key before entering fullscreen
     }
-  } else {
+    document.body.classList.add('fullscreen');
+    const searchTextForFullscreen = lowerSearchText.slice(0, -1).trim(); // Text without the trailing space
+    // ... (existing fullscreen content display logic, using searchTextForFullscreen and lastActiveKeyBeforeFullscreen) ...
+    // (Ensure this logic correctly uses lastActiveKeyBeforeFullscreen or currentActiveKey based on searchTextForFullscreen)
+    if (lastActiveKeyBeforeFullscreen && docs[lastActiveKeyBeforeFullscreen] && 
+        ( (searchTextForFullscreen === '' && currentActiveKey === lastActiveKeyBeforeFullscreen) || 
+          (searchTextForFullscreen !== '' && lastActiveKeyBeforeFullscreen.toLowerCase().includes(searchTextForFullscreen)) ) ) {
+        showContent(lastActiveKeyBeforeFullscreen);
+    } else if (currentActiveKey && docs[currentActiveKey] && 
+               ( (searchTextForFullscreen === '' && menuItemsElements.find(item => item.dataset.key === currentActiveKey && item.style.display !== 'none')) || 
+                  (searchTextForFullscreen !== '' && currentActiveKey.toLowerCase().includes(searchTextForFullscreen)) ) ){
+        showContent(currentActiveKey);
+    } else {
+      let firstVisibleAndMatchingKey = null;
+      for (const itemElement of menuItemsElements) {
+        if (itemElement.style.display !== 'none') {
+          const itemKey = itemElement.dataset.key;
+          if (searchTextForFullscreen === '' || (itemKey && itemKey.toLowerCase().includes(searchTextForFullscreen))) {
+            firstVisibleAndMatchingKey = itemKey;
+            break;
+          }
+        }
+      }
+      if (firstVisibleAndMatchingKey) {
+        showContent(firstVisibleAndMatchingKey);
+      } else if (menuItemsElements.length > 0 && menuItemsElements[0].style.display !== 'none') {
+        showContent(menuItemsElements[0].dataset.key);
+      }
+    }
+
+  } else { // Not ending with a space (not fullscreen intent or exiting fullscreen)
     document.body.classList.remove('fullscreen');
+    if (wasFullscreenClass) { // Just exited fullscreen (space was deleted)
+      console.log('[Search] Exited fullscreen. Attempting to restore/filter with:', lowerSearchText, 'Last key before FS:', lastActiveKeyBeforeFullscreen);
+      // Filtering logic below will apply. We want to see if lastActiveKeyBeforeFullscreen should be prioritized.
+    }
   }
 
   let firstMatchedKey = null;
-  menuItemsElements.forEach((itemElement, index) => {
-    const commandKey = itemElement.dataset.key ? itemElement.dataset.key.toLowerCase() : '';
-    if (commandKey.includes(lowerSearchText)) {
+  let activeKeyRestoredOrPrioritized = false;
+
+  // If just exited fullscreen, try to make lastActiveKeyBeforeFullscreen the active one if it matches current filter
+  if (wasFullscreenClass && !isNowFullscreen && lastActiveKeyBeforeFullscreen && 
+      lastActiveKeyBeforeFullscreen.toLowerCase().includes(lowerSearchText)) {
+      const potentialItem = menuItemsElements.find(el => el.dataset.key === lastActiveKeyBeforeFullscreen);
+      // Check if it's still in the DOM and would be visible after filtering (this check is a bit redundant as filtering happens next)
+      if (potentialItem) { 
+        firstMatchedKey = lastActiveKeyBeforeFullscreen;
+        activeKeyRestoredOrPrioritized = true;
+        console.log('[Search] Prioritized active key from fullscreen exit:', firstMatchedKey);
+      }
+  }
+
+  // Filter and highlight menu items
+  menuItemsElements.forEach((itemElement) => {
+    const originalKey = itemElement.dataset.key;
+    const commandKey = originalKey ? originalKey.toLowerCase() : '';
+    const titleElement = itemElement.querySelector('.menu-item-title');
+
+    if (commandKey.includes(lowerSearchText)) { // Match against trimmed, lowercased search text
       itemElement.style.display = '';
-      if (firstMatchedKey === null) {
-        firstMatchedKey = itemElement.dataset.key;
+      if (!activeKeyRestoredOrPrioritized && firstMatchedKey === null) {
+        firstMatchedKey = originalKey;
+      }
+      if (titleElement) {
+        const matchStartIndex = commandKey.indexOf(lowerSearchText);
+        if (matchStartIndex !== -1) {
+          const before = originalKey.substring(0, matchStartIndex);
+          const matchedPart = originalKey.substring(matchStartIndex, matchStartIndex + lowerSearchText.length);
+          const after = originalKey.substring(matchStartIndex + lowerSearchText.length);
+          titleElement.innerHTML = `${escapeHtml(before)}<span class="highlight">${escapeHtml(matchedPart)}</span>${escapeHtml(after)}`;
+        } else {
+          titleElement.textContent = originalKey;
+        }
       }
     } else {
       itemElement.style.display = 'none';
+      if (titleElement) {
+        titleElement.textContent = originalKey;
+      }
     }
   });
-  // 实时切换文档区为第一个匹配命令（非全屏时）
-  if (!searchText.endsWith(' ') && firstMatchedKey) {
-    showContent(firstMatchedKey);
+
+  // Update content display for non-fullscreen mode or when exiting fullscreen
+  if (!isNowFullscreen) {
+    if (firstMatchedKey) {
+      showContent(firstMatchedKey);
+      // Update .active class on menu items
+      document.querySelectorAll('.menu-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.key === firstMatchedKey) {
+          item.classList.add('active');
+        }
+      });
+    } else { // No match found for non-empty search
+      const content = document.getElementById('content');
+      content.innerHTML = '<h1>未找到匹配的命令</h1>';
+    }
   }
-  console.log('[ArthasDocs|Search] handleCommandSearch finished.');
+  
+  // Cleanup if exited fullscreen state
+  if (!isNowFullscreen && wasFullscreenClass) {
+    lastActiveKeyBeforeFullscreen = null;
+  }
+
+  previousSearchText = currentSearchText; // Update previousSearchText for the next call
+  console.log('[Search] handleCommandSearch finished. Active key:', currentActiveKey, 'First matched:', firstMatchedKey, 'Fullscreen:', document.body.classList.contains('fullscreen'));
+}
+
+// HTML转义函数，防止XSS
+function escapeHtml(unsafe) {
+    if (unsafe === null || typeof unsafe === 'undefined') {
+        return '';
+    }
+    return unsafe
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
 }
 // <--- 结束：新的搜索处理函数 -->
 
@@ -392,14 +555,30 @@ categoryDropdown.addEventListener('click', (e) => {
 
 // 统一聚焦搜索框的方法
 function focusSearchInput(options = {}) {
+  console.log('[FocusSearchInput] Called. keepInput:', options.keepInput, 'getSubInput type:', window.utools ? typeof window.utools.getSubInput : 'utools not defined', 'setSubInput type:', window.utools ? typeof window.utools.setSubInput : 'utools not defined');
   if (window.utools && typeof window.utools.setSubInput === 'function') {
     setTimeout(() => {
-      if (options.keepInput) {
-        // 只聚焦，不重置内容，且不传 text 字段，避免 [object Object]
-        utools.setSubInput(handleCommandSearch, { placeholder: '搜索命令...空格全屏', isFocus: true });
+      if (options.keepInput === true) { // 明确检查 true
+        if (typeof utools.getSubInput === 'function') {
+          const currentSubInput = utools.getSubInput();
+          if (currentSubInput && typeof currentSubInput.text === 'string') {
+            utools.setSubInput(handleCommandSearch, currentSubInput.text, true);
+            console.log('[FocusSearchInput] keepInput:true, getSubInput successful, called setSubInput with text:', currentSubInput.text);
+          } else {
+            // 将警告降级为日志，因为这是已知行为且已处理
+            console.log('[FocusSearchInput] keepInput:true, getSubInput() did not return valid text. ' +
+                         'Skipping explicit utools.setSubInput() call to avoid altering current input text. ' +
+                         'Text persistence relies on uTools default behavior.');
+          }
+        } else {
+          // 将警告降级为日志，因为这是已知行为且已处理
+          console.log('[FocusSearchInput] keepInput:true, utools.getSubInput() is NOT a function. ' +
+                       'Skipping explicit utools.setSubInput() call to avoid altering current input text. ' +
+                       'Text persistence relies on uTools default behavior.');
+        }
       } else {
-        // 默认行为，重置内容
-        utools.setSubInput(handleCommandSearch, '搜索命令...空格全屏', true);
+        console.log('[FocusSearchInput] keepInput:false (or undefined), calling setSubInput with empty string to clear/reset.');
+        utools.setSubInput(handleCommandSearch, '', true); 
       }
     }, 50);
   }
@@ -408,14 +587,19 @@ function focusSearchInput(options = {}) {
 // uTools窗口每次激活都设置搜索框，解决窗口重用后搜索框丢失问题
 if (window.utools && typeof window.utools.onPluginEnter === 'function') {
   window.utools.onPluginEnter(() => {
-    focusSearchInput();
+    if (window.utools && typeof window.utools.setSubInput === 'function') {
+        setTimeout(() => { 
+            // Set initial input text to placeholder; handleCommandSearch will process it.
+            utools.setSubInput(handleCommandSearch, PLACEHOLDER_TEXT, true);
+        }, 100);
+    }
   });
 }
 
 // 命令点击后聚焦搜索框
-function onMenuItemClick(key, opts = {}) {
+function onMenuItemClick(key, opts = {}) { // opts 会是 {keepInput: true} 或 {}
   showContent(key);
-  focusSearchInput(opts);
+  focusSearchInput(opts); // 若鼠标点击，opts为{}，则keepInput为false，会清空
 }
 
 // 分组切换后聚焦搜索框
@@ -423,7 +607,7 @@ function onMenuItemClick(key, opts = {}) {
 // 退出全屏时聚焦搜索框
 function exitFullscreen() {
   document.body.classList.remove('fullscreen');
-  focusSearchInput();
+  focusSearchInput(); // 调用时无参数，options.keepInput 为 false，会清空
 }
 
 // 全局监听空格键，无论焦点在哪里都能全屏
@@ -436,13 +620,24 @@ function isEditableElement(el) {
 document.addEventListener('keydown', (e) => {
   if (e.code === 'Space' || e.key === ' ') {
     const active = document.activeElement;
-    // 如果焦点在输入框，允许输入空格
-    if (isEditableElement(active)) return;
-    // 已经全屏则不重复
-    if (!document.body.classList.contains('fullscreen')) {
-      document.body.classList.add('fullscreen');
+    if (isEditableElement(active)) return; // Allow space in actual input/textarea elements
+
+    e.preventDefault(); // Prevent default browser action for space (e.g., scroll) first.
+
+    if (window.utools && typeof utools.getSubInput === 'function') {
+      const subInput = utools.getSubInput();
+      const text = subInput ? subInput.text : '';
+      // If input is effectively empty (truly empty or placeholder), block fullscreen intent.
+      if (text.trim() === '' || text === PLACEHOLDER_TEXT) {
+        console.log('[ArthasDocs|Keydown] Space pressed on empty/placeholder input. Fullscreen intent blocked.');
+        // The setSubInput callback (handleCommandSearch) will manage the state.
+        // Crucially, we return here so no fullscreen intent is implied by this keydown.
+        return;
+      }
     }
-    e.preventDefault();
+    // If we reach here, search is NOT empty/placeholder. Space implies fullscreen intent.
+    // handleCommandSearch will be called by uTools with the text + " " and will manage fullscreen class.
+    console.log('[ArthasDocs|Keydown] Space on non-empty text. Fullscreen intent allowed to be processed by handleCommandSearch.');
   }
   // 监听 ESC 退出全屏
   if (e.code === 'Escape' && document.body.classList.contains('fullscreen')) {
@@ -458,7 +653,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   initMenu(); 
 
-  // 移除 setSubInput 调用，改为 onPluginEnter 统一管理
+  // 移除了此处的 setSubInput 调用，统一由 onPluginEnter 管理初始状态
   // if (window.utools) {
   //   ...
   // }
@@ -470,14 +665,7 @@ document.addEventListener('DOMContentLoaded', () => {
     showContent(keys[0]);
   }
 
-  // uTools窗口每次激活都设置搜索框，解决窗口重用后搜索框丢失问题
-  if (window.utools && typeof window.utools.onPluginEnter === 'function') {
-    window.utools.onPluginEnter(() => {
-      setTimeout(() => {
-        utools.setSubInput(handleCommandSearch, '搜索命令...空格全屏', true);
-      }, 100);
-    });
-  }
+  // onPluginEnter 中已处理初始的 setSubInput
 });
 // <--- 结束：修改后的 DOMContentLoaded -->
 
@@ -524,7 +712,7 @@ function showCopyButton(x, y) {
         }
       }
       hideCopyButton();
-      focusSearchInput();
+      focusSearchInput(); // 调用时无参数，options.keepInput 为 false，会清空
     });
     document.body.appendChild(copyBtn);
   }
@@ -616,7 +804,7 @@ window.addEventListener('mousedown', (e) => {
   setTimeout(() => {
     const sel = window.getSelection();
     if (!sel || sel.isCollapsed || !sel.toString().trim()) {
-      focusSearchInput();
+      // focusSearchInput(); // 取消这里的调用，避免非预期的清空行为。仅在特定操作后主动聚焦/清空。
     }
   }, 0);
 });

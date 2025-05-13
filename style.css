@@ -334,7 +334,16 @@ body, html {
 
 /* 命令行选项高亮 */
 .code-block .option {
-  color: #e36209;
+  color: #005cc5;
+}
+
+/* 高亮搜索匹配文本 */
+.highlight {
+  background-color: #fff0e6; /* 非常浅的橙色背景 */
+  color: #c74b00; /* 深橙色文字 */
+  font-weight: bold;
+  padding: 1px 0;
+  border-radius: 2px;
 }
 
 /* 暗黑模式下的代码高亮 */
@@ -379,6 +388,17 @@ body, html {
 
   .code-block .option {
     color: #ffa657;
+  }
+
+  .menu-item.active .menu-item-title .highlight,
+  .menu-item:hover .menu-item-title .highlight,
+  .menu-item-title .highlight { /* 通用高亮 */
+    background-color: #ffaa4d; /* 暗黑模式下更鲜明的橙色 */
+    color: #3b1e00; /* 非常深的橙色/棕色文字，确保对比度 */
+  }
+
+  .doc-content table tr:hover {
+    background-color: #2c3a4a;
   }
 }
 
@@ -465,8 +485,6 @@ body, html {
     color: #aaa;
   }
 
-
-
   .menu-item:hover {
     background: #2c2c2c;
     border-left-color: #4fa3e3;
@@ -480,8 +498,6 @@ body, html {
   .menu-item.active .menu-item-title {
     color: #4fa3e3;
   }
-
-
 
   .content {
     background-color: #1e1e1e;
