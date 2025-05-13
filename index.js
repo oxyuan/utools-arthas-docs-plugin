@@ -61,7 +61,7 @@ function initMenu() {
     item.appendChild(title);
     item.appendChild(desc);
 
-    item.onclick = () => showContent(key);
+    item.onclick = () => onMenuItemClick(key);
     item.tabIndex = index; // 使菜单项可聚焦
     menu.appendChild(item);
     menuItemsElements.push(item); // <--- 添加：存储菜单项元素
@@ -74,23 +74,24 @@ function initMenu() {
 
   // 添加键盘事件监听
   document.addEventListener('keydown', (e) => {
-    const items = document.querySelectorAll('.menu-item');
-    const activeItem = document.querySelector('.menu-item.active');
-    let currentIndex = Array.from(items).indexOf(activeItem);
-
-    if (e.key === 'ArrowDown') {
-      if (currentIndex < items.length - 1) {
-        currentIndex++;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      const items = Array.from(document.querySelectorAll('.menu-item')).filter(item => item.style.display !== 'none');
+      const activeItem = items.find(item => item.classList.contains('active'));
+      let currentIndex = items.indexOf(activeItem);
+      if (e.key === 'ArrowDown') {
+        if (currentIndex < items.length - 1) {
+          currentIndex++;
+        }
+      } else if (e.key === 'ArrowUp') {
+        if (currentIndex > 0) {
+          currentIndex--;
+        }
       }
-    } else if (e.key === 'ArrowUp') {
-      if (currentIndex > 0) {
-        currentIndex--;
+      if (items[currentIndex]) {
+        onMenuItemClick(items[currentIndex].dataset.key, { keepInput: true });
+        items[currentIndex].focus();
       }
-    }
-
-    if (items[currentIndex]) {
-      items[currentIndex].click();
-      items[currentIndex].focus();
+      e.preventDefault();
     }
   });
 }
@@ -113,7 +114,7 @@ function handleCommandSearch(action) {
       showContent(firstKey);
     }
     // 退出全屏
-    document.body.classList.remove('fullscreen');
+    exitFullscreen();
     return;
   }
 
@@ -125,6 +126,19 @@ function handleCommandSearch(action) {
   // 判断是否需要全屏（输入内容以空格结尾）
   if (searchText.endsWith(' ')) {
     document.body.classList.add('fullscreen');
+    // 优先显示当前选中的命令
+    if (currentActiveKey && docs[currentActiveKey]) {
+      showContent(currentActiveKey);
+    } else {
+      // 没有选中过命令时，回退到第一个匹配命令
+      let firstMatchedKey = null;
+      menuItemsElements.forEach((itemElement) => {
+        if (itemElement.style.display !== 'none' && !firstMatchedKey) {
+          firstMatchedKey = itemElement.dataset.key;
+        }
+      });
+      if (firstMatchedKey) showContent(firstMatchedKey);
+    }
   } else {
     document.body.classList.remove('fullscreen');
   }
@@ -141,8 +155,8 @@ function handleCommandSearch(action) {
       itemElement.style.display = 'none';
     }
   });
-  // 实时切换文档区为第一个匹配命令
-  if (firstMatchedKey) {
+  // 实时切换文档区为第一个匹配命令（非全屏时）
+  if (!searchText.endsWith(' ') && firstMatchedKey) {
     showContent(firstMatchedKey);
   }
   console.log('[ArthasDocs|Search] handleCommandSearch finished.');
@@ -315,7 +329,7 @@ function filterMenuByCategory(category) {
       item.appendChild(title);
       item.appendChild(desc);
 
-      item.onclick = () => showContent(key);
+      item.onclick = () => onMenuItemClick(key);
       item.tabIndex = index;
       menu.appendChild(item);
       menuItemsElements.push(item); // <--- 添加：填充 menuItemsElements
@@ -376,6 +390,66 @@ categoryDropdown.addEventListener('click', (e) => {
   e.stopPropagation();
 });
 
+// 统一聚焦搜索框的方法
+function focusSearchInput(options = {}) {
+  if (window.utools && typeof window.utools.setSubInput === 'function') {
+    setTimeout(() => {
+      if (options.keepInput) {
+        // 只聚焦，不重置内容，且不传 text 字段，避免 [object Object]
+        utools.setSubInput(handleCommandSearch, { placeholder: '搜索命令...空格全屏', isFocus: true });
+      } else {
+        // 默认行为，重置内容
+        utools.setSubInput(handleCommandSearch, '搜索命令...空格全屏', true);
+      }
+    }, 50);
+  }
+}
+
+// uTools窗口每次激活都设置搜索框，解决窗口重用后搜索框丢失问题
+if (window.utools && typeof window.utools.onPluginEnter === 'function') {
+  window.utools.onPluginEnter(() => {
+    focusSearchInput();
+  });
+}
+
+// 命令点击后聚焦搜索框
+function onMenuItemClick(key, opts = {}) {
+  showContent(key);
+  focusSearchInput(opts);
+}
+
+// 分组切换后聚焦搜索框
+// 在 categoryDropdown.addEventListener('click', ...) 里切换分组后加 focusSearchInput();
+// 退出全屏时聚焦搜索框
+function exitFullscreen() {
+  document.body.classList.remove('fullscreen');
+  focusSearchInput();
+}
+
+// 全局监听空格键，无论焦点在哪里都能全屏
+// 仅当不是输入框/textarea等可编辑元素时才触发
+function isEditableElement(el) {
+  if (!el) return false;
+  const tag = el.tagName ? el.tagName.toLowerCase() : '';
+  return tag === 'input' || tag === 'textarea' || el.isContentEditable;
+}
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' || e.key === ' ') {
+    const active = document.activeElement;
+    // 如果焦点在输入框，允许输入空格
+    if (isEditableElement(active)) return;
+    // 已经全屏则不重复
+    if (!document.body.classList.contains('fullscreen')) {
+      document.body.classList.add('fullscreen');
+    }
+    e.preventDefault();
+  }
+  // 监听 ESC 退出全屏
+  if (e.code === 'Escape' && document.body.classList.contains('fullscreen')) {
+    exitFullscreen();
+  }
+});
+
 // <--- 修改：DOMContentLoaded 事件监听器 -->
 document.addEventListener('DOMContentLoaded', () => {
   console.log('[ArthasDocs] DOMContentLoaded event fired.');
@@ -406,3 +480,143 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 // <--- 结束：修改后的 DOMContentLoaded -->
+
+// 选中文本浮动"复制"按钮
+let copyBtn = null;
+let lastSelectionText = '';
+let lastMouseUpPos = null;
+
+function showCopyButton(x, y) {
+  if (!copyBtn) {
+    copyBtn = document.createElement('button');
+    copyBtn.textContent = '复制';
+    copyBtn.style.position = 'fixed';
+    copyBtn.style.zIndex = 9999;
+    copyBtn.style.padding = '2px 8px'; // 更小
+    copyBtn.style.fontSize = '12px'; // 更小
+    copyBtn.style.background = '#f0f0f0'; // 灰色主题
+    copyBtn.style.color = '#444';
+    copyBtn.style.border = '1px solid #ccc';
+    copyBtn.style.borderRadius = '3px';
+    copyBtn.style.boxShadow = '0 1px 4px rgba(0,0,0,0.10)';
+    copyBtn.style.cursor = 'pointer';
+    copyBtn.style.transition = 'opacity 0.2s, background 0.2s, color 0.2s';
+    copyBtn.style.opacity = '0.95';
+    copyBtn.addEventListener('mousedown', (e) => {
+      e.preventDefault(); // 防止失焦
+    });
+    copyBtn.addEventListener('mouseenter', () => {
+      copyBtn.style.background = '#e0e0e0';
+      copyBtn.style.color = '#222';
+      copyBtn.style.borderColor = '#bbb';
+    });
+    copyBtn.addEventListener('mouseleave', () => {
+      copyBtn.style.background = '#f0f0f0';
+      copyBtn.style.color = '#444';
+      copyBtn.style.borderColor = '#ccc';
+    });
+    copyBtn.addEventListener('click', () => {
+      if (lastSelectionText) {
+        if (window.utools && window.utools.copyText) {
+          window.utools.copyText(lastSelectionText);
+        } else if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(lastSelectionText);
+        }
+      }
+      hideCopyButton();
+      focusSearchInput();
+    });
+    document.body.appendChild(copyBtn);
+  }
+  copyBtn.style.left = x + 'px';
+  copyBtn.style.top = y + 'px';
+  copyBtn.style.display = 'block';
+}
+
+function hideCopyButton() {
+  if (copyBtn) {
+    copyBtn.style.display = 'none';
+  }
+  lastSelectionText = '';
+}
+
+function isSelectionInContent() {
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed) return false;
+  const range = sel.getRangeAt(0);
+  const content = document.querySelector('.content');
+  if (!content) return false;
+  return content.contains(range.commonAncestorContainer);
+}
+
+function updateCopyButton() {
+  requestAnimationFrame(() => {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed) {
+      hideCopyButton();
+      return;
+    }
+    const text = sel.toString();
+    if (!text.trim()) {
+      hideCopyButton();
+      return;
+    }
+    if (!isSelectionInContent()) {
+      hideCopyButton();
+      return;
+    }
+    lastSelectionText = text;
+    // 优先用鼠标松开位置，否则用选区下方
+    let x, y;
+    if (lastMouseUpPos) {
+      x = lastMouseUpPos.x;
+      y = lastMouseUpPos.y + 8; // 稍微下移
+      lastMouseUpPos = null; // 用完即清空
+    } else {
+      const range = sel.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      x = rect.left;
+      y = rect.bottom + 6;
+    }
+    showCopyButton(x, y);
+  });
+}
+
+// 监听内容区选中事件
+const contentEl = document.querySelector('.content');
+// selectionchange 只用于隐藏按钮
+// 鼠标拖动过程中不显示按钮
+document.addEventListener('selectionchange', () => {
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed || !sel.toString().trim() || !isSelectionInContent()) {
+    hideCopyButton();
+  }
+});
+if (contentEl) {
+  contentEl.addEventListener('mousedown', () => {
+    hideCopyButton(); // 拖动开始时立即隐藏按钮
+  });
+  contentEl.addEventListener('mouseup', (e) => {
+    lastMouseUpPos = { x: e.clientX, y: e.clientY };
+    updateCopyButton(); // 直接调用，无延迟
+  });
+  contentEl.addEventListener('keyup', () => {
+    lastMouseUpPos = null;
+    updateCopyButton(); // 直接调用，无延迟
+  });
+}
+// 点击内容区以外区域时隐藏按钮，并聚焦搜索框（如果选区消失）
+window.addEventListener('mousedown', (e) => {
+  if (copyBtn && copyBtn.style.display === 'block') {
+    if (!copyBtn.contains(e.target)) {
+      hideCopyButton();
+    }
+  }
+  // 判断选区是否消失，若消失则聚焦搜索框
+  setTimeout(() => {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || !sel.toString().trim()) {
+      focusSearchInput();
+    }
+  }, 0);
+});
