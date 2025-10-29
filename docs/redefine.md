@@ -57,11 +57,18 @@ redefine /tmp/com/example/demo/arthas/user/UserController.class
 
 ```
 base64 < Test.class > result.txt
-```2. 到服务器上，新建并编辑`result.txt`，复制本地的内容，粘贴再保存3. 把服务器上的 `result.txt`还原为`.class`
+```
+
+2. 到服务器上，新建并编辑`result.txt`，复制本地的内容，粘贴再保存
+
+3. 把服务器上的 `result.txt`还原为`.class`
 
 ```
 base64 -d < result.txt > Test.class
-```4. 用 md5 命令计算哈希值，校验是否一致
+```
+
+4. 用 md5 命令计算哈希值，校验是否一致
+
 ## [#](#redefine-的限制) redefine 的限制
 
 - 不允许新增加 field/method

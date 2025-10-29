@@ -90,14 +90,19 @@ retransform /tmp/com/example/demo/arthas/user/UserController.class
 使用`mc`命令来编译`jad`的反编译的代码有可能失败。可以在本地修改代码，编译好后再上传到服务器上。有的服务器不允许直接上传文件，可以使用`base64`命令来绕过。
 
 1. 在本地先转换`.class`文件为 base64，再保存为 result.txt
-
 ```
 base64 < Test.class > result.txt
-```2. 到服务器上，新建并编辑`result.txt`，复制本地的内容，粘贴再保存3. 把服务器上的 `result.txt`还原为`.class`
+```
+
+2. 到服务器上，新建并编辑`result.txt`，复制本地的内容，粘贴再保存
+   
+3. 把服务器上的 `result.txt`还原为`.class`
 
 ```
 base64 -d < result.txt > Test.class
-```4. 用 md5 命令计算哈希值，校验是否一致
+```
+
+4. 用 md5 命令计算哈希值，校验是否一致
 ## [#](#retransform-的限制) retransform 的限制
 
 - 不允许新增加 field/method

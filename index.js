@@ -78,6 +78,22 @@ function initMenu() {
   // 添加键盘事件监听
   document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      // --- MODIFICATION FOR REQUEST 1: Fullscreen arrow key scrolling ---
+      if (document.body.classList.contains('fullscreen')) {
+        const contentElement = document.getElementById('content');
+        if (contentElement) {
+          const scrollAmount = 60; // Adjust scroll speed as needed
+          if (e.key === 'ArrowDown') {
+            contentElement.scrollTop += scrollAmount;
+          } else { // ArrowUp
+            contentElement.scrollTop -= scrollAmount;
+          }
+        }
+        e.preventDefault(); // Prevent default page scroll and menu navigation
+        return; // Stop further processing for arrow keys in fullscreen
+      }
+      // --- END MODIFICATION FOR REQUEST 1 ---
+
       const items = Array.from(document.querySelectorAll('.menu-item')).filter(item => item.style.display !== 'none');
       const activeItem = items.find(item => item.classList.contains('active'));
       let currentIndex = items.indexOf(activeItem);
@@ -104,8 +120,15 @@ let currentActiveKey = '';
 
 // <--- 添加：新的搜索处理函数 -->
 function handleCommandSearch(action) {
-  const currentSearchText = action.text || '';
-  console.log(`[Search] Current: "${currentSearchText}", Previous: "${previousSearchText}", ActiveKey: "${currentActiveKey}"`);
+  const rawActionText = action.text;
+  // Ensure currentSearchText is always a string
+  const currentSearchText = (typeof rawActionText === 'string' || rawActionText instanceof String) ? rawActionText : '';
+
+  console.log(`[Search_Entry] currentSearchText: "${currentSearchText}" (raw: "${rawActionText}", type: ${typeof rawActionText}), previousSearchText_at_entry: "${previousSearchText}", currentActiveKey: "${currentActiveKey}"`);
+
+  if (typeof rawActionText !== 'string' && !(rawActionText instanceof String)) {
+    console.warn(`[Search_Warning] Received non-string action.text. Type: ${typeof rawActionText}, Value:`, rawActionText, ". Treated as empty string.");
+  }
 
   // --- 修改：优先处理来自占位符或有效空输入的空格全屏意图 ---
   const currentInputIsJustSpace = currentSearchText.trim() === '' && currentSearchText.length > 0 && currentSearchText.endsWith(' ');
@@ -308,8 +331,9 @@ function handleCommandSearch(action) {
     lastActiveKeyBeforeFullscreen = null;
   }
 
-  previousSearchText = currentSearchText; // Update previousSearchText for the next call
   console.log('[Search] handleCommandSearch finished. Active key:', currentActiveKey, 'First matched:', firstMatchedKey, 'Fullscreen:', document.body.classList.contains('fullscreen'));
+  // IMPORTANT: previousSearchText is updated *after* all logic, reflecting the text that *led* to the current state.
+  previousSearchText = currentSearchText; 
 }
 
 // HTML转义函数，防止XSS
@@ -555,43 +579,52 @@ categoryDropdown.addEventListener('click', (e) => {
 
 // 统一聚焦搜索框的方法
 function focusSearchInput(options = {}) {
-  console.log('[FocusSearchInput] Called. keepInput:', options.keepInput, 'getSubInput type:', window.utools ? typeof window.utools.getSubInput : 'utools not defined', 'setSubInput type:', window.utools ? typeof window.utools.setSubInput : 'utools not defined');
+  console.log(`[FocusSearchInput_Entry] Called. keepInput: ${options.keepInput}, getSubInput type: ${window.utools ? typeof window.utools.getSubInput : 'utools_NA'}, setSubInput type: ${window.utools ? typeof window.utools.setSubInput : 'utools_NA'}`);
   if (window.utools && typeof window.utools.setSubInput === 'function') {
-    setTimeout(() => {
-      if (options.keepInput === true) { // 明确检查 true
-        if (typeof utools.getSubInput === 'function') {
-          const currentSubInput = utools.getSubInput();
-          if (currentSubInput && typeof currentSubInput.text === 'string') {
-            utools.setSubInput(handleCommandSearch, currentSubInput.text, true);
-            console.log('[FocusSearchInput] keepInput:true, getSubInput successful, called setSubInput with text:', currentSubInput.text);
-          } else {
-            // 将警告降级为日志，因为这是已知行为且已处理
-            console.log('[FocusSearchInput] keepInput:true, getSubInput() did not return valid text. ' +
-                         'Skipping explicit utools.setSubInput() call to avoid altering current input text. ' +
-                         'Text persistence relies on uTools default behavior.');
-          }
+    let textToSet = '';
+    let source = 'empty_default';
+
+    if (options.keepInput === true) {
+      if (typeof utools.getSubInput === 'function') {
+        const currentSubInput = utools.getSubInput();
+        if (currentSubInput && typeof currentSubInput.text === 'string') {
+          textToSet = currentSubInput.text;
+          source = 'getSubInput_success';
+          console.log('[FocusSearchInput] keepInput:true. Successfully got text from utools.getSubInput():', `"${textToSet}"`);
         } else {
-          // 将警告降级为日志，因为这是已知行为且已处理
-          console.log('[FocusSearchInput] keepInput:true, utools.getSubInput() is NOT a function. ' +
-                       'Skipping explicit utools.setSubInput() call to avoid altering current input text. ' +
-                       'Text persistence relies on uTools default behavior.');
+          textToSet = previousSearchText || ''; // Fallback
+          source = 'getSubInput_failed_fallback_previousSearchText';
+          console.log('[FocusSearchInput] keepInput:true. utools.getSubInput() did not return valid text. Fallback to previousSearchText:', `"${textToSet}"`);
         }
       } else {
-        console.log('[FocusSearchInput] keepInput:false (or undefined), calling setSubInput with empty string to clear/reset.');
-        utools.setSubInput(handleCommandSearch, '', true); 
+        textToSet = previousSearchText || ''; // Fallback
+        source = 'getSubInput_unavailable_fallback_previousSearchText';
+        console.log('[FocusSearchInput] keepInput:true. utools.getSubInput() is NOT a function. Fallback to previousSearchText:', `"${textToSet}"`);
       }
-    }, 50);
+    } else {
+      // For keepInput: false (or undefined), textToSet remains '', source is 'empty_default' (clearing input)
+      source = 'clearing_input';
+      console.log('[FocusSearchInput] keepInput:false (or undefined). Setting input to empty string.');
+    }
+
+    console.log(`[FocusSearchInput_Set] Attempting utools.setSubInput with text: "${textToSet}" (source: ${source}), selectAll: true`);
+    utools.setSubInput(handleCommandSearch, textToSet, true);
+  } else {
+    console.warn('[FocusSearchInput_Error] utools.setSubInput is not available or window.utools is not defined.');
   }
 }
 
 // uTools窗口每次激活都设置搜索框，解决窗口重用后搜索框丢失问题
 if (window.utools && typeof window.utools.onPluginEnter === 'function') {
   window.utools.onPluginEnter(() => {
+    console.log('[onPluginEnter] Plugin entered. Scheduling setSubInput to PLACEHOLDER_TEXT.');
     if (window.utools && typeof window.utools.setSubInput === 'function') {
         setTimeout(() => { 
-            // Set initial input text to placeholder; handleCommandSearch will process it.
+            console.log('[onPluginEnter_Timeout] Executing delayed setSubInput with PLACEHOLDER_TEXT.');
             utools.setSubInput(handleCommandSearch, PLACEHOLDER_TEXT, true);
-        }, 100);
+        }, 100); // 100ms delay might be important
+    } else {
+      console.warn('[onPluginEnter_Timeout_Error] utools.setSubInput not available when trying to set placeholder.');
     }
   });
 }
@@ -620,27 +653,21 @@ function isEditableElement(el) {
 document.addEventListener('keydown', (e) => {
   if (e.code === 'Space' || e.key === ' ') {
     const active = document.activeElement;
-    if (isEditableElement(active)) return; // Allow space in actual input/textarea elements
-
-    e.preventDefault(); // Prevent default browser action for space (e.g., scroll) first.
-
-    if (window.utools && typeof utools.getSubInput === 'function') {
-      const subInput = utools.getSubInput();
-      const text = subInput ? subInput.text : '';
-      // If input is effectively empty (truly empty or placeholder), block fullscreen intent.
-      if (text.trim() === '' || text === PLACEHOLDER_TEXT) {
-        console.log('[ArthasDocs|Keydown] Space pressed on empty/placeholder input. Fullscreen intent blocked.');
-        // The setSubInput callback (handleCommandSearch) will manage the state.
-        // Crucially, we return here so no fullscreen intent is implied by this keydown.
-        return;
-      }
+    if (isEditableElement(active)) {
+      console.log('[GlobalKeydown_Space] Space pressed in an editable element. Ignoring.');
+      return; 
     }
-    // If we reach here, search is NOT empty/placeholder. Space implies fullscreen intent.
-    // handleCommandSearch will be called by uTools with the text + " " and will manage fullscreen class.
-    console.log('[ArthasDocs|Keydown] Space on non-empty text. Fullscreen intent allowed to be processed by handleCommandSearch.');
+
+    e.preventDefault(); 
+    console.log('[GlobalKeydown_Space] Space pressed on non-editable element. Prevented default. Allowing uTools to process and call handleCommandSearch.');
+    // We no longer try to inspect utools.getSubInput() here or conditionally return.
+    // uTools will capture the space, append it to its current sub-input value,
+    // and then call handleCommandSearch with the new, space-appended text.
+    // handleCommandSearch is responsible for interpreting this.
   }
   // 监听 ESC 退出全屏
   if (e.code === 'Escape' && document.body.classList.contains('fullscreen')) {
+    console.log('[GlobalKeydown_Escape] Escape pressed in fullscreen. Exiting fullscreen.');
     exitFullscreen();
   }
 });
@@ -666,6 +693,42 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // onPluginEnter 中已处理初始的 setSubInput
+  const searchInputElement = document.getElementById('search-input'); // Renamed for clarity
+
+  if (searchInputElement) { // Check if the DOM element exists
+    document.addEventListener('mouseup', (event) => {
+      const selection = window.getSelection();
+      const selectedText = selection ? selection.toString().trim() : '';
+
+      // Scenario: Text is selected, copy button is visible. User clicks elsewhere (not on copy button).
+      if (copyBtn && copyBtn.style.display === 'block' && !copyBtn.contains(event.target)) {
+        // Check if the click target is a "neutral" area (not another interactive element).
+        const targetIsNeutral = !event.target.closest('button, a, input, textarea, select, .sidebar, #resizer, .menu-item') &&
+                                event.target !== searchInputElement;
+        
+        if (targetIsNeutral) {
+          hideCopyButton();
+          focusSearchInput({ keepInput: false });
+          return; // Explicitly handled.
+        }
+      }
+
+      // Fallback: If text is selected, and user clicks a neutral area,
+      // and it wasn't the copy button itself (its own handler runs for that),
+      // and it wasn't the "click away from visible copy button" scenario handled above.
+      if (selectedText) {
+        const generallyClickedNeutralArea = 
+            event.target !== searchInputElement && // searchInputElement might be null, this is fine
+            !event.target.closest('button, a, input, textarea, select, .sidebar, #resizer, .menu-item');
+
+        const notClickingCopyButtonItself = !(copyBtn && copyBtn.contains(event.target));
+
+        if (generallyClickedNeutralArea && notClickingCopyButtonItself) {
+            focusSearchInput({ keepInput: false });
+        }
+      }
+    });
+  }
 });
 // <--- 结束：修改后的 DOMContentLoaded -->
 
@@ -673,6 +736,7 @@ document.addEventListener('DOMContentLoaded', () => {
 let copyBtn = null;
 let lastSelectionText = '';
 let lastMouseUpPos = null;
+let contentIsDragging = false; // <--- Add new state variable
 
 function showCopyButton(x, y) {
   if (!copyBtn) {
@@ -781,16 +845,34 @@ document.addEventListener('selectionchange', () => {
   }
 });
 if (contentEl) {
-  contentEl.addEventListener('mousedown', () => {
-    hideCopyButton(); // 拖动开始时立即隐藏按钮
+  contentEl.addEventListener('mousedown', (e) => {
+    contentIsDragging = false;
+    // Do NOT hide copy button here unconditionally.
+    // If it's a mousedown on the copy button itself, its own handler will work.
+    // If it's mousedown on content starting a drag, mousemove will hide.
+    // If it's mousedown on content that will be a click, document.mouseup will handle.
   });
+
+  contentEl.addEventListener('mousemove', (e) => {
+    // Check if primary mouse button is pressed (dragging) and drag just started
+    if (e.buttons === 1 && !contentIsDragging) { 
+        contentIsDragging = true;
+        hideCopyButton(); // Hide button when dragging starts
+    }
+  });
+
   contentEl.addEventListener('mouseup', (e) => {
     lastMouseUpPos = { x: e.clientX, y: e.clientY };
-    updateCopyButton(); // 直接调用，无延迟
+    // updateCopyButton should be called whether it was a click or drag end,
+    // to reflect current selection.
+    updateCopyButton(); 
+
+    // Reset for next interaction, after updateCopyButton might have used lastMouseUpPos
+    contentIsDragging = false; 
   });
   contentEl.addEventListener('keyup', () => {
-    lastMouseUpPos = null;
-    updateCopyButton(); // 直接调用，无延迟
+    lastMouseUpPos = null; // Reset mouse position for keyboard selection
+    updateCopyButton(); // Update copy button based on keyboard selection changes
   });
 }
 // 点击内容区以外区域时隐藏按钮，并聚焦搜索框（如果选区消失）

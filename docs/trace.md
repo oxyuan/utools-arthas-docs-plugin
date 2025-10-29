@@ -1,8 +1,8 @@
 [`trace`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-trace)
 
-> 提示
+> **提示**
 > 方法内部调用路径，并输出方法路径上的每个节点上耗时
-`trace` 命令能主动搜索 `class-pattern`／`method-pattern` 对应的方法调用路径，渲染和统计整个调用链路上的所有性能开销和追踪调用链路。
+> `trace` 命令能主动搜索 `class-pattern`／`method-pattern` 对应的方法调用路径，渲染和统计整个调用链路上的所有性能开销和追踪调用链路。
 
 ## [#](#参数说明) 参数说明
 
@@ -27,6 +27,7 @@
 
 > 提示
 > watch/stack/trace 这个三个命令都支持`#cost`
+
 ## [#](#注意事项) 注意事项
 
 - `trace` 能方便的帮助你定位和发现因 RT 高而导致的性能问题缺陷，但其每次只能跟踪一级方法的调用链路。
@@ -242,14 +243,19 @@ Affect(class count: 1 , method count: 1) cost in 35 ms, listenerId: 2
         +---[0.021911ms] java.lang.Exception:getMessage() #57
         +---[0.015643ms] java.lang.StringBuilder:toString() #57
         `---[0.086622ms] java.io.PrintStream:println() #57
-```2. 非函数调用的指令消耗。比如 `i++`, `getfield`等指令。3. 在代码执行过程中，JVM 可能出现停顿，比如 GC，进入同步块等。
+```
+
+2. 非函数调用的指令消耗。比如 `i++`, `getfield`等指令。
+3. 在代码执行过程中，JVM 可能出现停顿，比如 GC，进入同步块等。
+
 ### [#](#使用-v-参数打印更多信息) 使用 -v 参数打印更多信息
 
 > 提示
 > watch/trace/monitor/stack/tt 命令都支持 `-v` 参数
+
 当命令执行之后，没有输出结果。有两种可能：
 
-1. 匹配到的函数没有被执行2. 条件表达式结果是 false
-但用户区分不出是哪种情况。
+1. 匹配到的函数没有被执行
+2. 条件表达式结果是 false，但用户区分不出是哪种情况。
 
 使用 `-v`选项，则会打印`Condition express`的具体值和执行结果，方便确认。
