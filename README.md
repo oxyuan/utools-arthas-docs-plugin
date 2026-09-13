@@ -48,16 +48,44 @@ Arthas 是阿里巴巴开源的 Java 应用诊断工具，广泛应用于线上�
 ```
 arthas/
 ├── docs/                 # Arthas 文档 Markdown 文件
+├── scripts/              # 文档格式规范化 / 校验脚本
+│   └── normalize-md.js   # 统一修复 docs/*.md 的格式问题
 ├── index.html            # 主界面 HTML
 ├── index.js              # 主要 JavaScript 逻辑
 ├── style.css             # 样式表
-├── preload.js            # uTools 预加载脚本
+├── preload.js            # uTools 预加载脚本（marked 渲染器 / 代码高亮）
 ├── plugin.json           # 插件配置文件
 ├── docs-list.json        # 文档列表和描述
+├── docs-group.json       # 文档分组
 ├── logo.png              # 插件图标
 ├── package.json          # 项目依赖配置
 └── README.md             # 项目说明文档
 ```
+
+### 文档格式规范
+
+`docs/*.md` 由 Arthas 官方文档页面转换而来，历史上累积了不少转换痕迹（标题锚点、被压平的提示块、丢失的表格内联代码、缺失的代码块语言标注等）。
+
+`scripts/normalize-md.js` 负责把这些内容统一整理成规范 Markdown，并在 `preload.js` 中复用，保证「磁盘上的文档」和「实际渲染结果」一致：
+
+```bash
+npm run normalize   # 就地修复 docs/*.md
+npm run check       # 只检查是否存在格式差异（有差异时退出码为 1）
+```
+
+> ⚠️ `scripts/normalize-md.js` 会被 `preload.js` 直接 `require`，因此**不要给它加 `#!` shebang**：
+> uTools 的 preload 运行在 Electron 的 vm 中，其模块加载器不会剥掉 shebang，会直接抛
+> `SyntaxError: Invalid or unexpected token`，导致整个插件打不开。
+
+规范化的内容包括：
+
+- 移除标题里的锚点残留，如 `## [#](#参数说明) 参数说明` -> `## 参数说明`
+- 修复被转换器压平的提示块，统一为 `> **提示**` 形式（渲染时转换为 Callout）
+- 修复引用块「懒延续」导致正文被吞进引用的问题
+- 修复挤到同一行的列表项、丢失缩进的嵌套列表
+- 恢复表格单元格里被吞掉的行内代码（如 `[m <arg>]`）
+- 修正代码块语言标注，清理不可见控制字符与全角符号误用
+- 统一空行、列表符号和分隔线写法
 
 ## 🚀 功能模块
 
@@ -70,7 +98,7 @@ arthas/
 ### 2. 界面交互
 
 - **侧边栏调整**：可拖动分隔条调整侧边栏宽度
-- **版本切换**：支持未来扩展多版本文档切换功能
+- **文档分组**：按「命令列表 / 其它说明」等分组筛选文档
 - **通知系统**：提供操作反馈的通知机制
 
 ### 3. 代码展示
@@ -121,6 +149,8 @@ npm install
 2. 修改代码后刷新插件进行测试
 
 ### 构建插件
+
+> 注意：`preload.js` 通过 `require` 加载 `marked`，因此插件目录中的 `node_modules` 必须一起打包（`.utoolsignore` 不要忽略它）。
 
 ```bash
 # 打包插件

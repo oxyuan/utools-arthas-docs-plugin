@@ -6,7 +6,11 @@
     {
       "code": "arthas",
       "explain": "Arthas 帮助文档",
-      "cmds": ["arthas", "docs", "java诊断"]
+      "cmds": [
+        "arthas",
+        "docs",
+        "java诊断"
+      ]
     }
   ]
-} 
+}

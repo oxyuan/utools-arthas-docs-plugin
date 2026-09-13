@@ -39,3 +39,4 @@ Thumbs.db
 *.sw?
 
 .cursor/
+.trae/

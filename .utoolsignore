@@ -1,3 +1,9 @@
 .cursor
-.dist 
-node_modules
+.trae
+.vscode
+.dist
+dist
+build
+.DS_Store
+*~
+*.log
