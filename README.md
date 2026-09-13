@@ -43,40 +43,49 @@ Arthas 是阿里巴巴开源的 Java 应用诊断工具，广泛应用于线上�
    - 利用 Node.js 能力读取本地文件
    - 插件生命周期管理
 
-### 文件结构
+### 目录结构
+
+> 仓库根目录只放工程文件（`.git`、`scripts/`、`README.md` …），**插件本体全部在 `plugin/`**。
+> 这样 `plugin/` 天然不含 `.git`、`.vscode` 等版本控制/编辑器目录，开发者工具可以直接加载它调试。
 
 ```
 arthas/
-├── docs/                 # Arthas 文档 Markdown 文件
-├── scripts/              # 构建 / 文档格式规范化脚本
-│   ├── normalize-md.js   # 统一修复 docs/*.md 的格式问题（运行时被 preload 复用）
-│   └── build.js          # 生成干净的发布目录 .dist/（排除 .git 等）
-├── index.html            # 主界面 HTML
-├── index.js              # 主要 JavaScript 逻辑
-├── style.css             # 样式表
-├── preload.js            # uTools 预加载脚本（marked 渲染器 / 代码高亮）
-├── plugin.json           # 插件配置文件
-├── docs-list.json        # 文档列表和描述
-├── docs-group.json       # 文档分组
-├── images/               # 文档里引用的图片
-│   └── arthas-logo.png   # Arthas 原始横版 Logo（README 展示用）
-├── logo.png              # 插件图标（256x256 正方形，发布要求）
-├── package.json          # 项目依赖配置
-└── README.md             # 项目说明文档
+├── plugin/                     # 插件本体（开发者工具选这个目录调试）
+│   ├── .utoolsignore           # 打包忽略规则（兜底）
+│   ├── package.json            # 插件依赖（marked），node_modules 必须与 preload.js 同级
+│   ├── plugin.json             # 插件配置
+│   ├── preload.js              # uTools 预加载脚本（marked 渲染器 / 代码高亮）
+│   ├── index.html              # 主界面
+│   ├── index.js                # 主要逻辑
+│   ├── style.css               # 样式表
+│   ├── logo.png                # 插件图标（256x256 正方形）
+│   ├── docs/                   # 50 篇 Arthas 文档
+│   ├── docs-list.json          # 文档列表和描述
+│   ├── docs-group.json         # 文档分组
+│   ├── images/                 # 文档引用的图片
+│   └── scripts/
+│       └── normalize-md.js     # 文档格式规范化（运行时被 preload 复用）
+├── scripts/                    # 仓库工具（不参与打包）
+│   ├── install-plugin.js       # 安装 plugin/ 依赖并清理 .map（postinstall）
+│   ├── strip-debug.js          # 清理 *.js.map / *.css.map / *.js.gz / *.css.gz
+│   └── build-release.js        # 生成干净的 release/
+├── release/                    # 打包产物（git 忽略），在开发者工具里选它发布
+├── package.json                # 仓库脚本（不参与打包）
+└── README.md
 ```
 
 ### 文档格式规范
 
-`docs/*.md` 由 Arthas 官方文档页面转换而来，历史上累积了不少转换痕迹（标题锚点、被压平的提示块、丢失的表格内联代码、缺失的代码块语言标注等）。
+`plugin/docs/*.md` 由 Arthas 官方文档页面转换而来，历史上累积了不少转换痕迹（标题锚点、被压平的提示块、丢失的表格内联代码、缺失的代码块语言标注等）。
 
-`scripts/normalize-md.js` 负责把这些内容统一整理成规范 Markdown，并在 `preload.js` 中复用，保证「磁盘上的文档」和「实际渲染结果」一致：
+`plugin/scripts/normalize-md.js` 负责把这些内容统一整理成规范 Markdown，并在 `preload.js` 中复用，保证「磁盘上的文档」和「实际渲染结果」一致：
 
 ```bash
-npm run normalize   # 就地修复 docs/*.md
+npm run normalize   # 就地修复 plugin/docs/*.md
 npm run check       # 只检查是否存在格式差异（有差异时退出码为 1）
 ```
 
-> ⚠️ `scripts/normalize-md.js` 会被 `preload.js` 直接 `require`，因此**不要给它加 `#!` shebang**：
+> ⚠️ `plugin/scripts/normalize-md.js` 会被 `preload.js` 直接 `require`，因此**不要给它加 `#!` shebang**：
 > uTools 的 preload 运行在 Electron 的 vm 中，其模块加载器不会剥掉 shebang，会直接抛
 > `SyntaxError: Invalid or unexpected token`，导致整个插件打不开。
 
@@ -145,36 +154,51 @@ npm run check       # 只检查是否存在格式差异（有差异时退出码�
 ### 安装依赖
 
 ```bash
-npm install
+npm install          # 安装 plugin/ 依赖（marked）并自动清理 .map
 ```
+
+根目录的 `postinstall` 会自动执行 `npm install --prefix plugin`（因为 `require('marked')`
+必须能在 `preload.js` 同级找到 `node_modules`），并顺手删掉依赖里自带的 sourcemap。
+单独重跑：`npm run install:plugin`。
 
 ### 开发调试
 
-1. 使用 uTools 开发者工具加载项目目录
-2. 修改代码后刷新插件进行测试
+在 uTools 开发者工具中加载 **`plugin/` 目录**（`plugin.json` 所在目录）。
+`plugin/` 里只有插件本体，不会包含 `.git`、`.vscode` 等版本控制/编辑器目录。
 
-### 构建发布包
+### 打包 / 发布
 
-> ⚠️ uTools 发布要求：**打包目录里不能包含 `.git/`、`.gitignore`、`.vscode/`、`*.js.map` 等版本控制/编辑器文件**（官方 FAQ「发布时的资源清洁」）。
-> 官方也明确建议「切勿将整个项目的根目录打包成插件应用」，所以不要直接拿仓库根目录去打包。
+> ⚠️ uTools 要求**发布目录不能包含调试文件与版本控制目录**，例如：
+> `*.js.map`、`*.css.map`、`*.js.gz`、`*.css.gz`、`.git/`、`.vscode/` 等；
+> 官方也建议「切勿将整个项目的根目录打包成插件应用」。
 
 ```bash
-npm run build        # 按白名单生成干净的发布目录 .dist/
-npm run build:check  # 只校验已有的 .dist/
+npm install              # 安装 plugin/ 依赖并清理 .map
+npm run build:release    # 生成干净的 release/ 目录（不含 .git）
 ```
 
-`scripts/build.js` 会：
+然后在 uTools 开发者工具中选择 **`release/` 目录**进行打包 / 发布。
 
-1. 只把插件运行时真正需要的文件复制到 `.dist/`（`plugin.json`、入口文件、`docs/`、`images/`、`node_modules/`、`preload.js` 依赖的 `scripts/normalize-md.js` 等）；
-2. 顺手排掉 `.git/`、`.gitignore`、`.vscode/`、`.cursor/`、`.trae/`、`.DS_Store`、`*.js.map` 等发布禁止项；
-3. 校验产物：禁止文件为零、`plugin.json` 声明的入口都存在、`logo.png` 是正方形、
-   `docs-list.json` 与 `docs/` 数量一致、被 `preload.js` `require` 的脚本能在 Electron 加载器下编译。
+`scripts/build-release.js` 会把 `plugin/` 复制一份到 `release/`，并：
 
-然后在 uTools 开发者工具里选择 **`.dist/` 目录**进行打包/发布。
+1. 跳过所有调试文件（`*.js.map` / `*.css.map` / `*.js.gz` / `*.css.gz`）与
+   `.git`、`.gitignore`、`.vscode`、`.cursor`、`.trae`、`.DS_Store`、`package-lock.json`；
+2. 校验产物：禁止文件为零、`plugin.json` 声明的入口都存在、`logo.png` 是正方形、
+   `docs-list.json` 与 `docs/` 数量一致、`preload.js` `require` 的本地模块都打包了，
+   并且能在 Electron 式加载器下编译。
+
+相关命令：
+
+```bash
+npm run check:release          # 只校验已有的 release/
+npm run strip-debug            # 手动清理 plugin/ 里的调试文件
+npm run strip-debug -- release # 清理指定目录（可传多个）
+npm run strip-debug -- --check # 只检查有没有残留（有则退出码 1）
+```
 
 > 两个容易踩的坑：
 > 1. `preload.js` 运行时会 `require('marked')` 和 `require('./scripts/normalize-md.js')`，
->    所以 `node_modules/` 与 `scripts/normalize-md.js` **必须**跟着打包；
+>    所以 `node_modules/` 与 `plugin/scripts/normalize-md.js` **必须**跟着打包；
 > 2. 被 `require` 的脚本**不能带 `#!` shebang**，uTools 的 preload 加载器不会剥掉它，
 >    否则会直接抛 `SyntaxError` 导致插件打不开。
 

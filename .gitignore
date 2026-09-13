@@ -1,9 +1,10 @@
 # Build and distribution directories
+release/
 .dist/
 dist/
 build/
 
-# Dependencies
+# Dependencies (plugin/node_modules)
 node_modules/
 
 # Logs

@@ -14,10 +14,10 @@
  *
  * 本脚本把这些痕迹统一清理成规范、稳定的 Markdown。
  *
- * 用法：
- *   node scripts/normalize-md.js            # 就地修复 docs/*.md
- *   node scripts/normalize-md.js --check    # 只检查，不写入（退出码 1 表示存在差异）
- *   node scripts/normalize-md.js --stdout <file>   # 打印规范化结果，便于对比
+ * 用法（在仓库根目录执行）：
+ *   npm run normalize                       # 就地修复 plugin/docs/*.md
+ *   npm run check                           # 只检查，不写入（退出码 1 表示存在差异）
+ *   node plugin/scripts/normalize-md.js --stdout <file>   # 打印规范化结果，便于对比
  */
 
 'use strict'

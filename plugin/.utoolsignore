@@ -3,9 +3,10 @@
 .gitmodules
 .github
 .vscode
+.idea
 .cursor
 .trae
-.dist
+release
 dist
 build
 .DS_Store
@@ -13,3 +14,5 @@ build
 *~
 *.js.map
 *.css.map
+*.js.gz
+*.css.gz

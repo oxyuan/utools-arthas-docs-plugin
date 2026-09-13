@@ -4,12 +4,12 @@
   "private": true,
   "description": "uTools 插件：Arthas 命令参考文档（离线）",
   "scripts": {
-    "normalize": "node scripts/normalize-md.js",
-    "check": "node scripts/normalize-md.js --check",
-    "build": "node scripts/build.js",
-    "build:check": "node scripts/build.js --check"
-  },
-  "dependencies": {
-    "marked": "^15.0.8"
+    "postinstall": "node scripts/install-plugin.js",
+    "install:plugin": "node scripts/install-plugin.js",
+    "strip-debug": "node scripts/strip-debug.js",
+    "build:release": "node scripts/build-release.js",
+    "check:release": "node scripts/build-release.js --check",
+    "normalize": "node plugin/scripts/normalize-md.js",
+    "check": "node plugin/scripts/normalize-md.js --check"
   }
 }
