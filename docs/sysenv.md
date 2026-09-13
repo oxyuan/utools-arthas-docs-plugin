@@ -1,10 +1,12 @@
 [`sysenv`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-sysenv)
 
-> 提示
+> **提示**
+>
 > 查看当前 JVM 的环境属性(`System Environment Variables`)
-## [#](#使用参考) 使用参考
 
-```
+## 使用参考
+
+```text
 USAGE:
    sysenv [-h] [env-name]
 
@@ -23,9 +25,9 @@ USAGE:
  <env-name>                                                 env name
 ```
 
-### [#](#查看所有环境变量) 查看所有环境变量
+### 查看所有环境变量
 
-```
+```bash
 $ sysenv
  KEY                      VALUE
 ----------------------------------------------------------------------------------------------------------------------------
@@ -61,11 +63,13 @@ $ sysenv
  AUTOJUMP_ERROR_PATH      /Users/admin/Library/autojump/errors.log
 ```
 
-### [#](#查看单个环境变量) 查看单个环境变量
+### 查看单个环境变量
 
-> 提示
+> **提示**
+>
 > 支持通过`TAB`键自动补全
-```
+
+```bash
 $ sysenv USER
 USER=admin
 ```

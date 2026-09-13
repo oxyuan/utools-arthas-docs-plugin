@@ -1,10 +1,12 @@
 [`grep`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-grep)
 
-> 提示
+> **提示**
+>
 > 类似传统的`grep`命令。
-## [#](#使用参考) 使用参考
 
-```
+## 使用参考
+
+```bash
 USAGE:
    grep [-A <value>] [-B <value>] [-C <value>] [-h] [-i] [-v] [-n] [-m <value>] [-e] [--trim-end] pattern
 

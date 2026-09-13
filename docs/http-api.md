@@ -1,4 +1,3 @@
-
 [Http API 在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=case-http-api)
 
 ## 概览
@@ -26,12 +25,12 @@ Http API 接口地址为：`http://ip:port/api`，必须使用 POST 方式提交
 
 请求数据格式说明：
 
-*   `action` : 请求的动作/行为，可选值请参考"请求 Action"小节。
-*   `requestId` : 可选请求 ID，由客户端生成。
-*   `sessionId` : Arthas 会话 ID，一次性命令不需要设置会话 ID。
-*   `consumerId` : Arthas 消费者 ID，用于多人共享会话。
-*   `command` : Arthas command line 。
-*   `execTimeout` : 命令同步执行的超时时间(ms)，默认为 30000。
+- `action` : 请求的动作/行为，可选值请参考"请求 Action"小节。
+- `requestId` : 可选请求 ID，由客户端生成。
+- `sessionId` : Arthas 会话 ID，一次性命令不需要设置会话 ID。
+- `consumerId` : Arthas 消费者 ID，用于多人共享会话。
+- `command` : Arthas command line 。
+- `execTimeout` : 命令同步执行的超时时间(ms)，默认为 30000。
 
 注意: 不同的 action 使用到参数不同，根据具体的 action 来设置参数。
 
@@ -39,22 +38,22 @@ Http API 接口地址为：`http://ip:port/api`，必须使用 POST 方式提交
 
 目前支持的请求 Action 如下：
 
-*   `exec` : 同步执行命令，命令正常结束或者超时后中断命令执行后返回命令的执行结果。
-*   `async_exec` : 异步执行命令，立即返回命令的调度结果，命令执行结果通过`pull_results`获取。
-*   `interrupt_job` : 中断会话当前的命令，类似 Telnet `Ctrl + c`的功能。
-*   `pull_results` : 获取异步执行的命令的结果，以 http 长轮询（long-polling）方式重复执行
-*   `init_session` : 创建会话
-*   `join_session` : 加入会话，用于支持多人共享同一个 Arthas 会话
-*   `close_session` : 关闭会话
+- `exec` : 同步执行命令，命令正常结束或者超时后中断命令执行后返回命令的执行结果。
+- `async_exec` : 异步执行命令，立即返回命令的调度结果，命令执行结果通过`pull_results`获取。
+- `interrupt_job` : 中断会话当前的命令，类似 Telnet `Ctrl + c`的功能。
+- `pull_results` : 获取异步执行的命令的结果，以 http 长轮询（long-polling）方式重复执行
+- `init_session` : 创建会话
+- `join_session` : 加入会话，用于支持多人共享同一个 Arthas 会话
+- `close_session` : 关闭会话
 
 ### 响应状态
 
 响应中的 state 属性表示请求处理状态，取值如下：
 
-*   `SCHEDULED`：异步执行命令时表示已经创建 job 并已提交到命令执行队列，命令可能还没开始执行或者执行中；
-*   `SUCCEEDED`：请求处理成功（完成状态）；
-*   `FAILED`：请求处理失败（完成状态），通常附带 message 说明原因；
-*   `REFUSED`：请求被拒绝（完成状态），通常附带 message 说明原因；
+- `SCHEDULED`：异步执行命令时表示已经创建 job 并已提交到命令执行队列，命令可能还没开始执行或者执行中；
+- `SUCCEEDED`：请求处理成功（完成状态）；
+- `FAILED`：请求处理失败（完成状态），通常附带 message 说明原因；
+- `REFUSED`：请求被拒绝（完成状态），通常附带 message 说明原因；
 
 ## 一次性命令
 
@@ -107,12 +106,12 @@ curl -Ss -XPOST http://localhost:8563/api -d '
 
 响应数据解析：
 
-*   `state`: 请求处理状态，参考“接口响应状态”说明
-*   `sessionId`: Arthas 会话 ID，一次性命令自动创建及销毁临时会话
-*   `body.jobId`: 命令的任务 ID，同一任务输出的所有 Result 都是相同的 jobId
-*   `body.jobStatus`: 任务状态，同步执行正常结束为`TERMINATED`
-*   `body.timeExpired`: 任务执行是否超时
-*   `body/results`: 命令执行的结果列表
+- `state`: 请求处理状态，参考“接口响应状态”说明
+- `sessionId`: Arthas 会话 ID，一次性命令自动创建及销毁临时会话
+- `body.jobId`: 命令的任务 ID，同一任务输出的所有 Result 都是相同的 jobId
+- `body.jobStatus`: 任务状态，同步执行正常结束为`TERMINATED`
+- `body.timeExpired`: 任务执行是否超时
+- `body/results`: 命令执行的结果列表
 
 **命令结果格式说明**
 
@@ -131,28 +130,28 @@ curl -Ss -XPOST http://localhost:8563/api -d '
 ]
 ```
 
-*   `type` : 命令结果类型，除了`status`等特殊的几个外，其它的保持与 Arthas 命令名称一致。请参考"[特殊命令结果](#special_command_results)"小节。
-*   `jobId` : 处理命令的任务 ID。
-*   其它字段为每个不同命令的数据。
+- `type` : 命令结果类型，除了`status`等特殊的几个外，其它的保持与 Arthas 命令名称一致。请参考"[特殊命令结果](#special_command_results)"小节。
+- `jobId` : 处理命令的任务 ID。
+- 其它字段为每个不同命令的数据。
 
 注意：也可以使用一次性命令的方式执行 watch/trace 等连续输出的命令，但不能中断命令执行，可能出现长时间没有结束的问题。请参考"[watch 命令输出 map 对象](#change_watch_value_to_map)"小节的示例。
 
 请尽量按照以下方式处理：
 
-*   设置合理的`execTimeout`，到达超时时间后强制中断命令执行，避免长时间挂起。
-*   通过`-n`参数指定较少的执行次数。
-*   保证命令匹配的方法可以成功命中和 condition-express 编写正确，如果 watch/trace 没有命中就算指定`-n 1`也会挂起等待到执行超时。
+- 设置合理的`execTimeout`，到达超时时间后强制中断命令执行，避免长时间挂起。
+- 通过`-n`参数指定较少的执行次数。
+- 保证命令匹配的方法可以成功命中和 condition-express 编写正确，如果 watch/trace 没有命中就算指定`-n 1`也会挂起等待到执行超时。
 
 ## 会话交互
 
 由用户创建及管理 Arthas 会话，适用于复杂的交互过程。访问流程如下：
 
-*   创建会话
-*   加入会话(可选）
-*   拉取命令结果
-*   执行一系列命令
-*   中断命令执行
-*   关闭会话
+- 创建会话
+- 加入会话(可选）
+- 拉取命令结果
+- 执行一系列命令
+- 中断命令执行
+- 关闭会话
 
 ### 创建会话
 
@@ -295,9 +294,9 @@ curl -Ss -XPOST http://localhost:8563/api -d '''
 }
 ```
 
-*   `state` : `SCHEDULED` 状态表示已经解析命令生成任务，但未开始执行。
-*   `body.jobId` : 异步执行命令的任务 ID，可以根据此任务 ID 来过滤在`pull_results`输出的命令结果。
-*   `body.jobStatus` : 任务状态`READY`表示未开始执行。
+- `state` : `SCHEDULED` 状态表示已经解析命令生成任务，但未开始执行。
+- `body.jobId` : 异步执行命令的任务 ID，可以根据此任务 ID 来过滤在`pull_results`输出的命令结果。
+- `body.jobStatus` : 任务状态`READY`表示未开始执行。
 
 查看上面自动拉取结果消息脚本的 shell 输出：
 
@@ -447,18 +446,18 @@ curl -Ss -XPOST http://localhost:8563/api -d '''
 
 已实现功能：
 
-*   创建会话
-*   复制并打开 url 加入会话，多人共享会话
-*   周期性拉取会话命令结果消息
-*   刷新页面或者加入会话拉取会话历史命令消息
-*   输入命令/中断命令状态控制
+- 创建会话
+- 复制并打开 url 加入会话，多人共享会话
+- 周期性拉取会话命令结果消息
+- 刷新页面或者加入会话拉取会话历史命令消息
+- 输入命令/中断命令状态控制
 
 待开发功能：
 
-*   改进将命令结果消息可读性
-*   命令输入支持自动完成及命令模板
-*   提供命令帮助
-*   支持个人选项设置
+- 改进将命令结果消息可读性
+- 命令输入支持自动完成及命令模板
+- 提供命令帮助
+- 支持个人选项设置
 
 ## 特殊命令结果
 
@@ -501,9 +500,9 @@ curl -Ss -XPOST http://localhost:8563/api -d '''
 
 用于 UI 交互时控制用户输入，每次执行命令前后会发送改变的消息。 `inputStatus` 的值说明：
 
-*   `ALLOW_INPUT` : 允许用户输入命令，表示会话没有在执行的前台命令，可以接受新的命令。
-*   `ALLOW_INTERRUPT` : 允许用户中断命令执行，表示当前正在执行命令，用户可以发送`interrupt_job`中断执行。
-*   `DISABLED` : 禁用状态，不能输入命令也不能中断命令。
+- `ALLOW_INPUT` : 允许用户输入命令，表示会话没有在执行的前台命令，可以接受新的命令。
+- `ALLOW_INTERRUPT` : 允许用户中断命令执行，表示当前正在执行命令，用户可以发送`interrupt_job`中断执行。
+- `DISABLED` : 禁用状态，不能输入命令也不能中断命令。
 
 ### command
 
@@ -554,14 +553,14 @@ json_data=$(curl -Ss -XPOST http://localhost:8563/api -d '
 }')
 ```
 
-*   使用`sed`提取值：
+- 使用`sed`提取值：
 
 ```bash
 class_path=$(echo $json_data | tr -d '\n' | sed 's/.*"java.class.path":"\([^"]*\).*/\1/')
 echo "classpath: $class_path"
 ```
 
-*   使用`json_pp/awk`提取值
+- 使用`json_pp/awk`提取值
 
 ```bash
 class_path=$(echo $json_data | tr -d '\n' | json_pp | grep java.class.path | awk -F'"' '{ print $4 }')
@@ -570,20 +569,20 @@ echo "classpath: $class_path"
 
 输出内容：
 
-```
+```text
 classpath: demo-arthas-spring-boot.jar
 ```
 
 注意：
 
-*   `echo $json_data | tr -d '\n'` : 删除换行符(`line.separator`的值)，避免影响`sed`/`json_pp`命令处理。
-*   `awk -F'"' '{ print $4 }'` : 使用双引号作为分隔符号
+- `echo $json_data | tr -d '\n'` : 删除换行符(`line.separator`的值)，避免影响`sed`/`json_pp`命令处理。
+- `awk -F'"' '{ print $4 }'` : 使用双引号作为分隔符号
 
 ### watch 命令输出 map 对象
 
 watch 的结果值由计算`watch-express` ognl 表达式产生，可以通过改变 ognl 表达式来生成想要的值，请参考[OGNL 文档](https://commons.apache.org/dormant/commons-ognl/language-guide.html)。
 
-> 提示
+> **提示**
 >
 > Maps can also be created using a special syntax.
 >
@@ -599,7 +598,7 @@ watch *MathGame prime* '#{ "params" : params, "returnObj" : returnObj, "throwExp
 
 在 Telnet shell/WebConsole 中执行上面的命令，输出的结果：
 
-```
+```text
 ts=2020-08-06 16:57:20; [cost=0.241735ms] result=@LinkedHashMap[
      @String[params]:@Object[][
          @Integer[1],

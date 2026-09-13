@@ -1,10 +1,12 @@
 [`perfcounter`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-perfcounter)
 
-> 提示
+> **提示**
+>
 > 查看当前 JVM 的 Perf Counter 信息
-## [#](#使用参考) 使用参考
 
-```
+## 使用参考
+
+```bash
 $ perfcounter
  java.ci.totalTime                            2325637411
  java.cls.loadedClasses                       3403
@@ -19,7 +21,7 @@ $ perfcounter
 
 可以用`-d`参数打印更多信息：
 
-```
+```bash
 $ perfcounter -d
  Name                                   Variability   Units        Value
 ---------------------------------------------------------------------------------
@@ -30,10 +32,10 @@ $ perfcounter -d
  java.cls.unloadedClasses               Monotonic     Events       0
 ```
 
-## [#](#jdk9-以上的应用) jdk9 以上的应用
+## jdk9 以上的应用
 
 如果没有打印出信息，应用在启动时，加下面的参数：
 
-```
+```bash
 --add-opens java.base/jdk.internal.perf=ALL-UNNAMED --add-exports java.base/jdk.internal.perf=ALL-UNNAMED --add-opens java.management/sun.management.counter.perf=ALL-UNNAMED --add-opens java.management/sun.management.counter=ALL-UNNAMED
 ```

@@ -9,9 +9,9 @@
 
 - https://github.com/alibaba/arthas/blob/master/core/src/main/java/com/taobao/arthas/core/command/monitor200/MemoryCommand.java
 
-## [#](#使用参考) 使用参考
+## 使用参考
 
-```
+```bash
 $ memory
 Memory                           used      total      max        usage
 heap                             32M       256M       4096M      0.79%

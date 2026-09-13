@@ -1,26 +1,28 @@
-> 提示
+> **提示**
+>
 > 查看 classloader 的继承树，urls，类加载信息
+
 `classloader` 命令将 JVM 中所有的 classloader 的信息统计出来，并可以展示继承树，urls 等。
 
 可以让指定的 classloader 去 getResources，打印出所有查找到的 resources 的 url。对于`ResourceNotFoundException`比较有用。
 
-## [#](#参数说明) 参数说明
+## 参数说明
 
 | 参数名称 | 参数说明 |
 | --- | --- |
 | [l] | 按类加载实例进行统计 |
 | [t] | 打印所有 ClassLoader 的继承树 |
 | [a] | 列出所有 ClassLoader 加载的类，请谨慎使用 |
-| [c:] | ClassLoader 的 hashcode |
-| [classLoaderClass:] | 指定执行表达式的 ClassLoader 的 class name |
-| [c: r:] | 用 ClassLoader 去查找 resource |
-| [c: load:] | 用 ClassLoader 去加载指定的类 |
+| `[c:]` | ClassLoader 的 hashcode |
+| `[classLoaderClass:]` | 指定执行表达式的 ClassLoader 的 class name |
+| `[c: r:]` | 用 ClassLoader 去查找 resource |
+| `[c: load:]` | 用 ClassLoader 去加载指定的类 |
 
-## [#](#使用参考) 使用参考
+## 使用参考
 
-### [#](#按类加载类型查看统计信息) 按类加载类型查看统计信息
+### 按类加载类型查看统计信息
 
-```
+```bash
 $ classloader
  name                                       numberOfInstances  loadedCountTotal
  com.taobao.arthas.agent.ArthasClassloader  1                  2115
@@ -31,9 +33,9 @@ $ classloader
 Affect(row-cnt:5) cost in 3 ms.
 ```
 
-### [#](#按类加载实例查看统计信息) 按类加载实例查看统计信息
+### 按类加载实例查看统计信息
 
-```
+```bash
 $ classloader -l
  name                                                loadedCount  hash      parent
  BootstrapClassLoader                                1861         null      null
@@ -43,9 +45,9 @@ $ classloader -l
 Affect(row-cnt:4) cost in 2 ms.
 ```
 
-### [#](#查看-classloader-的继承树) 查看 ClassLoader 的继承树
+### 查看 ClassLoader 的继承树
 
-```
+```bash
 $ classloader -t
 +-BootstrapClassLoader
 +-sun.misc.Launcher$ExtClassLoader@66350f69
@@ -54,9 +56,9 @@ $ classloader -t
 Affect(row-cnt:4) cost in 3 ms.
 ```
 
-### [#](#查看-urlclassloader-实际的-urls) 查看 URLClassLoader 实际的 urls
+### 查看 URLClassLoader 实际的 urls
 
-```
+```bash
 $ classloader -c 3d4eac69
 file:/private/tmp/math-game.jar
 file:/Users/hengyunabc/.arthas/lib/3.0.5/arthas/arthas-agent.jar
@@ -68,7 +70,7 @@ Affect(row-cnt:9) cost in 3 ms.
 
 对于只有唯一实例的 ClassLoader 可以通过 class name 指定，使用起来更加方便：
 
-```
+```bash
 $ classloader --classLoaderClass sun.misc.Launcher$AppClassLoader
 file:/private/tmp/math-game.jar
 file:/Users/hengyunabc/.arthas/lib/3.0.5/arthas/arthas-agent.jar
@@ -76,9 +78,9 @@ file:/Users/hengyunabc/.arthas/lib/3.0.5/arthas/arthas-agent.jar
 Affect(row-cnt:9) cost in 3 ms.
 ```
 
-### [#](#使用-classloader-去查找-resource) 使用 ClassLoader 去查找 resource
+### 使用 ClassLoader 去查找 resource
 
-```
+```bash
 $ classloader -c 3d4eac69  -r META-INF/MANIFEST.MF
  jar:file:/System/Library/Java/Extensions/MRJToolkit.jar!/META-INF/MANIFEST.MF
  jar:file:/private/tmp/math-game.jar!/META-INF/MANIFEST.MF
@@ -87,14 +89,14 @@ $ classloader -c 3d4eac69  -r META-INF/MANIFEST.MF
 
 也可以尝试查找类的 class 文件：
 
-```
+```bash
 $ classloader -c 1b6d3586 -r java/lang/String.class
  jar:file:/Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/jre/lib/rt.jar!/java/lang/String.class
 ```
 
-### [#](#使用-classloader-去加载类) 使用 ClassLoader 去加载类
+### 使用 ClassLoader 去加载类
 
-```
+```bash
 $ classloader -c 3d4eac69 --load demo.MathGame
 load class success.
  class-info        demo.MathGame
@@ -119,11 +121,13 @@ load class success.
  classLoaderHash   3d4eac69
 ```
 
-### [#](#统计-classloader-实际使用-url-和未使用的-url) 统计 ClassLoader 实际使用 URL 和未使用的 URL
+### 统计 ClassLoader 实际使用 URL 和未使用的 URL
 
-> 注意
-> 注意，基于 JVM 目前已加载的所有类统计，不代表`Unused URLs`可以从应用中删掉。因为可能将来需要从`Unused URLs`里加载类，或者需要加载`resources`。
-```
+> **注意**
+>
+> 基于 JVM 目前已加载的所有类统计，不代表`Unused URLs`可以从应用中删掉。因为可能将来需要从`Unused URLs`里加载类，或者需要加载`resources`。
+
+```bash
 $ classloader --url-stat
  com.taobao.arthas.agent.ArthasClassloader@3c41660, hash:3c41660
  Used URLs:

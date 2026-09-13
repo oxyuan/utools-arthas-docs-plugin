@@ -1,12 +1,14 @@
 [`vmoption`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-vmoption)
 
-> 提示
+> **提示**
+>
 > 查看，更新 VM 诊断相关的参数
-## [#](#使用参考) 使用参考
 
-### [#](#查看所有的-option) 查看所有的 option
+## 使用参考
 
-```
+### 查看所有的 option
+
+```bash
 [arthas@56963]$ vmoption
  KEY                    VALUE                   ORIGIN                 WRITEABLE
 ---------------------------------------------------------------------------------------------
@@ -34,18 +36,18 @@
  PrintConcurrentLocks   false                   DEFAULT                true
 ```
 
-### [#](#查看指定的-option) 查看指定的 option
+### 查看指定的 option
 
-```
+```bash
 $ vmoption PrintGC
  KEY                 VALUE                ORIGIN              WRITEABLE
 ---------------------------------------------------------------------------------
  PrintGC             false                MANAGEMENT          true
 ```
 
-### [#](#更新指定的-option) 更新指定的 option
+### 更新指定的 option
 
-```
+```bash
 $ vmoption PrintGC true
 Successfully updated the vm option.
  NAME     BEFORE-VALUE  AFTER-VALUE
@@ -53,7 +55,7 @@ Successfully updated the vm option.
  PrintGC  false         true
 ```
 
-```
+```bash
 $ vmoption PrintGCDetails true
 Successfully updated the vm option.
  NAME            BEFORE-VALUE  AFTER-VALUE

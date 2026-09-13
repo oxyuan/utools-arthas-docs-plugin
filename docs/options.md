@@ -1,8 +1,7 @@
-# options
-
 [`options`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-options)
 
-> 提示
+> **提示**
+>
 > 全局开关
 
 | 名称 | 默认值 | 描述 |
@@ -74,7 +73,8 @@ $ options json-format
                                   ect output          ted.
 ```
 
-> 提示
+> **提示**
+>
 > 默认情况下`json-format`为 false，如果希望`watch`/`tt`等命令结果以 json 格式输出，则可以设置`json-format`为 true。
 
 ## 设置指定的 option
@@ -107,8 +107,10 @@ Affect(class count: 1 , method count: 1) cost in 61 ms, listenerId: 1
 
 ## 关闭 strict 模式，允许在 ognl 表达式里设置对象属性
 
-> 提示
+> **提示**
+>
 > since 3.6.0
+
 对于新用户，在编写 ognl 表达式时，可能会出现误用。
 
 比如对于`Student`，判断年龄等于 18 时，可能条件表达式会误写为`target.age=18`，这个表达式实际上是把当前对象的`age`设置为 18 了。正确的写法是`target.age==18`。

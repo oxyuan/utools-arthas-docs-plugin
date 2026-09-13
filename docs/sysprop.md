@@ -1,10 +1,12 @@
 [`sysprop`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-sysprop)
 
-> 提示
+> **提示**
+>
 > 查看当前 JVM 的系统属性(`System Property`)
-## [#](#使用参考) 使用参考
 
-```
+## 使用参考
+
+```text
 USAGE:
    sysprop [-h] [property-name] [property-value]
 
@@ -25,9 +27,9 @@ USAGE:
  <property-value>                            property value
 ```
 
-### [#](#查看所有属性) 查看所有属性
+### 查看所有属性
 
-```
+```bash
 $ sysprop
  KEY                                                  VALUE
 -------------------------------------------------------------------------------------------------------------------------------------
@@ -100,18 +102,20 @@ $ sysprop
  sun.cpu.isalist
 ```
 
-### [#](#查看单个属性) 查看单个属性
+### 查看单个属性
 
-> 提示
+> **提示**
+>
 > 支持通过`TAB`键自动补全
-```
+
+```bash
 $ sysprop java.version
 java.version=1.8.0_51
 ```
 
-### [#](#修改单个属性) 修改单个属性
+### 修改单个属性
 
-```
+```bash
 $ sysprop user.country
 user.country=US
 $ sysprop user.country CN

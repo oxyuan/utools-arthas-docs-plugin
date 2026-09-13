@@ -1,15 +1,17 @@
-> 提示
+> **提示**
+>
 > [help 指令]的等同于[指令 -help]，都是查看具体指令的使用说明。
-## [#](#参数说明) 参数说明
+
+## 参数说明
 
 | 参数名称 | 参数说明 |
 | --- | --- |
 | 不接参数 | 查询当前 arthas 版本支持的指令以及指令描述 |
 | [name:] | 查询具体指令的使用说明 |
 
-## [#](#使用参考) 使用参考
+## 使用参考
 
-```
+```bash
 $ help
  NAME         DESCRIPTION
  help         Display Arthas Help
@@ -56,7 +58,7 @@ $ help
  stop         Stop/Shutdown Arthas server and exit the console.
 ```
 
-```
+```bash
 $ help dashboard
   USAGE:
    dashboard [-h] [-i <value>] [-n <value>]

@@ -1,12 +1,12 @@
 [`getstatic`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-getstatic)
 
-### [#](#使用参考) 使用参考
+### 使用参考
 
 - 推荐直接使用[ognl](https://arthas.aliyun.com/doc/ognl.html)命令，更加灵活。
 
 通过 getstatic 命令可以方便的查看类的静态属性。使用方法为`getstatic class_name field_name`
 
-```
+```bash
 $ getstatic demo.MathGame random
 field: random
 @Random[
@@ -34,7 +34,7 @@ field: random
 
 如果你使用`-c`，你需要手动输入 hashcode：`-c <hashcode>`
 
-```
+```bash
 $ getstatic -c 3d4eac69 demo.MathGame random
 ```
 
@@ -53,7 +53,7 @@ $ getstatic -c 3d4eac69 demo.MathGame random
 
 例如，假设 n 是一个 Map，Map 的 Key 是一个 Enum，我们想过滤出 Map 中 Key 为某个 Enum 的值，可以写如下命令
 
-```
+```bash
 $ getstatic com.alibaba.arthas.Test n 'entrySet().iterator.{? #this.key.name()=="STOP"}'
 field: n
 @ArrayList[

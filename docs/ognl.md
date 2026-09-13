@@ -1,33 +1,35 @@
 [`ognl`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials?language=cn&id=command-ognl)
 
-> 提示
+> **提示**
+>
 > 执行 ognl 表达式
+
 从 3.0.5 版本增加
 
-## [#](#参数说明) 参数说明
+## 参数说明
 
 | 参数名称 | 参数说明 |
 | --- | --- |
-| express | 执行的表达式 |
-| [c:] | 执行表达式的 ClassLoader 的 hashcode，默认值是 SystemClassLoader |
-| [classLoaderClass:] | 指定执行表达式的 ClassLoader 的 class name |
+| *express* | 执行的表达式 |
+| `[c:]` | 执行表达式的 ClassLoader 的 hashcode，默认值是 SystemClassLoader |
+| `[classLoaderClass:]` | 指定执行表达式的 ClassLoader 的 class name |
 | [x] | 结果对象的展开层次，默认值 1 |
 
-## [#](#使用参考) 使用参考
+## 使用参考
 
 - OGNL 特殊用法请参考：[https://github.com/alibaba/arthas/issues/71](https://github.com/alibaba/arthas/issues/71)
 - OGNL 表达式官方指南：[https://commons.apache.org/dormant/commons-ognl/language-guide.html](https://commons.apache.org/dormant/commons-ognl/language-guide.html)
 
 调用静态函数：
 
-```
+```bash
 $ ognl '@java.lang.System@out.println("hello")'
 null
 ```
 
 获取静态类的静态字段：
 
-```
+```bash
 $ ognl '@demo.MathGame@random'
 @Random[
     serialVersionUID=@Long[3905348978240129619],
@@ -50,7 +52,7 @@ $ ognl '@demo.MathGame@random'
 
 通过 hashcode 指定 ClassLoader：
 
-```
+```bash
 $ classloader -t
 +-BootstrapClassLoader
 +-jdk.internal.loader.ClassLoaders$PlatformClassLoader@301ec38b
@@ -71,7 +73,7 @@ $
 
 对于只有唯一实例的 ClassLoader 可以通过 class name 指定，使用起来更加方便：
 
-```
+```bash
 $ ognl --classLoaderClass org.springframework.boot.loader.LaunchedURLClassLoader  @org.springframework.boot.SpringApplication@logger
 @Slf4jLocationAwareLog[
     FQCN=@String[org.apache.commons.logging.LogAdapter$Slf4jLocationAwareLog],
@@ -82,7 +84,7 @@ $ ognl --classLoaderClass org.springframework.boot.loader.LaunchedURLClassLoader
 
 执行多行表达式，赋值给临时变量，返回一个 List：
 
-```
+```bash
 $ ognl '#value1=@System@getProperty("java.home"), #value2=@System@getProperty("java.runtime.name"), {#value1, #value2}'
 @ArrayList[
     @String[/opt/java/8.0.181-zulu/jre],

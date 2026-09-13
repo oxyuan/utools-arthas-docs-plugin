@@ -1,10 +1,12 @@
 [`reset`在线教程](https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=command-reset)
 
-> 提示
+> **提示**
+>
 > 重置增强类，将被 Arthas 增强过的类全部还原，Arthas 服务端`stop`时会重置所有增强过的类
-## [#](#使用参考) 使用参考
 
-```
+## 使用参考
+
+```bash
 $ reset -h
  USAGE:
    reset [-h] [-E] [class-pattern]
@@ -23,9 +25,9 @@ $ reset -h
  <class-pattern>                                                    Path and classname of Pattern Matching
 ```
 
-## [#](#还原指定类) 还原指定类
+## 还原指定类
 
-```
+```bash
 $ trace Test test
 Press Ctrl+C to abort.
 Affect(class-cnt:1 , method-cnt:1) cost in 57 ms.
@@ -39,9 +41,9 @@ $ reset Test
 Affect(class-cnt:1 , method-cnt:0) cost in 11 ms.
 ```
 
-## [#](#还原所有类) 还原所有类
+## 还原所有类
 
-```
+```bash
 $ trace Test test
 Press Ctrl+C to abort.
 Affect(class-cnt:1 , method-cnt:1) cost in 15 ms.
