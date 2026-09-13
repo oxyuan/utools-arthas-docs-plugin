@@ -1,4 +1,12 @@
 {
+  "name": "utools-arthas-docs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "uTools 插件：Arthas 命令参考文档（离线）",
+  "scripts": {
+    "normalize": "node scripts/normalize-md.js",
+    "check": "node scripts/normalize-md.js --check"
+  },
   "dependencies": {
     "marked": "^15.0.8"
   }
