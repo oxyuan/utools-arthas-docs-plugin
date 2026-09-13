@@ -93,6 +93,19 @@ function stripControlChars(text) {
 }
 
 /* ------------------------------------------------------------------ *
+ * 3b. 图片路径
+ *    文档放在 docs/ 下，所以引用图片时写的是 `../images/x.png`；
+ *    但渲染结果会被注入到插件根目录的 index.html 里，
+ *    要改写成相对插件根目录的 `images/x.png`，否则打包后会加载不到。
+ * ------------------------------------------------------------------ */
+function normalizeImagePaths(text) {
+  return text.replace(
+    /(!\[[^\]]*\]\()(?:\.\.\/)+(?=[^)]*\))/g,
+    '$1'
+  )
+}
+
+/* ------------------------------------------------------------------ *
  * 3. 全角符号误用
  *    例如 `class-pattern／method-pattern` 中的全角斜杠。
  * ------------------------------------------------------------------ */
@@ -547,6 +560,7 @@ function normalize(text) {
   s = stripHeadingAnchors(s)
   s = normalizeSetextHeadings(s)
   s = normalizeFullwidthSymbols(s)
+  s = normalizeImagePaths(s)
   s = normalizeAnchorLinks(s)
   s = normalizeCodeFences(s)
   s = normalizeBlockquotes(s)

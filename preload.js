@@ -156,13 +156,11 @@ const renderer = {
     const title = token.title || '';
     const alt = token.text || '';
 
-    // 处理相对路径，如 ../images/xxx.png -> ./images/xxx.png
-    if (href.indexOf('../') === 0) {
-      href = href.replace(/^\.\.\//, './');
-    }
-    // 本地图片使用绝对路径，保证 file:// 页面能正确加载
-    if (href && href.indexOf('http') !== 0 && href.indexOf('/') !== 0 && !/^[a-zA-Z]+:/.test(href)) {
-      href = path.join(__dirname, href);
+    // 文档里的图片路径统一在 scripts/normalize-md.js 里改成了相对插件
+    // 根目录的写法（如 `images/xxx.png`），这里只做一个兜底，保持相对路径。
+    // 不要拼成绝对路径：那会把本机路径写进 HTML，打包后也容易出错。
+    if (href && !/^(?:[a-zA-Z][a-zA-Z0-9+.-]*:|\/\/|\/)/.test(href)) {
+      href = href.replace(/^(?:\.\.\/)+/, '').replace(/^\.\//, '');
     }
 
     return `<img src="${escapeHtml(href)}" alt="${escapeHtml(alt)}" title="${escapeHtml(title)}" />`;
