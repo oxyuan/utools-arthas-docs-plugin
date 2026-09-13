@@ -174,19 +174,37 @@ body, html {
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
- .doc-toc {
+/* 文档目录（TOC）
+   目录里的 <ul>/<li> 也会被下面的 `.doc-content ul`、`.doc-content li` 命中，
+   它们带的 `padding-left: 2em` 会让文字离左侧竖线空出一大段空白，
+   所以这里统一用 `.doc-content .doc-toc` 提高优先级把缩进清掉，
+   只保留下面按层级设置的 14px/28px 缩进。 */
+.doc-content .doc-toc {
   border-left: 3px solid #eaecef;
   padding-left: 12px;
   margin: 0 0 16px 0;
- }
- .doc-toc ul { list-style: none; }
- .doc-toc li { margin: 4px 0; }
- .doc-toc a { color: #6a737d; font-size: 13px; text-decoration: none; cursor: pointer; }
- .doc-toc a:hover { color: #0366d6; text-decoration: underline; }
- .doc-toc a.active { color: #0366d6; font-weight: 600; }
- .toc-level-2 { padding-left: 0; }
- .toc-level-3 { padding-left: 12px; }
- .toc-level-4 { padding-left: 24px; }
+}
+.doc-content .doc-toc ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.doc-content .doc-toc li {
+  margin: 3px 0;
+  padding-left: 0;
+  line-height: 1.6;
+}
+.doc-content .doc-toc li.toc-level-2 { padding-left: 0; }
+.doc-content .doc-toc li.toc-level-3 { padding-left: 14px; }
+.doc-content .doc-toc li.toc-level-4 { padding-left: 28px; }
+.doc-content .doc-toc a {
+  color: #6a737d;
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+}
+.doc-content .doc-toc a:hover { color: #0366d6; text-decoration: underline; }
+.doc-content .doc-toc a.active { color: #0366d6; font-weight: 600; }
 
 /* 确保 h1 元素没有额外的 margin */
 .content h1 {
@@ -620,9 +638,11 @@ body, html {
   .doc-content table tr:hover {
     background-color: #2c3a4a;
   }
-  .doc-toc a { color: #8b949e; }
-  .doc-toc a:hover { color: #58a6ff; }
-  .doc-toc a.active { color: #58a6ff; }
+  /* 选择器要和亮色主题保持一致，否则优先级更低会被覆盖 */
+  .doc-content .doc-toc { border-left-color: #3a3a3a; }
+  .doc-content .doc-toc a { color: #8b949e; }
+  .doc-content .doc-toc a:hover { color: #58a6ff; }
+  .doc-content .doc-toc a.active { color: #58a6ff; }
 }
 
 /* 分隔条样式 */
