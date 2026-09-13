@@ -14,6 +14,7 @@ if (!nodeAPI.fs) {
 const PLACEHOLDER_TEXT = '搜索命令...空格全屏';
 let previousSearchText = ''; // 用于检测全屏状态转换和普通搜索内容变化
 let lastActiveKeyBeforeFullscreen = null; // 用于记住全屏前的选中项
+let tocScrollHandler = null; // 当前文档的目录 scrollspy 监听器（切换文档时需要解绑）
 
 // 修改 docs 目录路径为相对路径
 const docsDir = path.join(__dirname, 'docs');
@@ -422,6 +423,48 @@ function showContent(key) {
   });
 
   const docContentEl = content.querySelector('.doc-content');
+
+  // 注意：真正带滚动条的是 `#content`(.content)，`.doc-content` 只是它的内容容器，
+  // 它的 scrollTop 恒为 0，所以目录跳转和 scrollspy 都必须作用在 .content 上。
+  const scrollHost = content;
+
+  /** 元素在滚动容器内容坐标系里的偏移（与当前滚动位置无关） */
+  const offsetWithin = el =>
+    el.getBoundingClientRect().top -
+    scrollHost.getBoundingClientRect().top +
+    scrollHost.scrollTop;
+
+  const decodeAnchor = raw => {
+    try {
+      return decodeURIComponent(raw);
+    } catch (err) {
+      return raw;
+    }
+  };
+
+  // 滚动到某个锚点。返回 false 表示目标不存在。
+  const scrollToAnchor = id => {
+    if (!id || !docContentEl) return false;
+    const target = Array.from(docContentEl.querySelectorAll('[id]')).find(
+      el => el.id === id
+    );
+    if (!target) return false;
+    const top = Math.max(offsetWithin(target) - 8, 0);
+    if (typeof scrollHost.scrollTo === 'function') {
+      scrollHost.scrollTo({ top, behavior: 'smooth' });
+    } else {
+      scrollHost.scrollTop = top;
+    }
+    return true;
+  };
+
+  // `#content` 是常驻元素，切换文档时只替换它的 innerHTML，
+  // 所以上一个文档的 scrollspy 监听器要先解绑，否则会不断累积。
+  if (tocScrollHandler) {
+    scrollHost.removeEventListener('scroll', tocScrollHandler);
+    tocScrollHandler = null;
+  }
+
   if (doc.toc && doc.toc.length && docContentEl) {
     const tocEl = document.createElement('nav');
     tocEl.className = 'doc-toc';
@@ -431,6 +474,7 @@ function showContent(key) {
       li.className = 'toc-level-' + i.level;
       const a = document.createElement('a');
       a.href = '#' + i.id;
+      a.dataset.anchorId = i.id; // 直接用原始 id，避免 hash 被百分号编码后比对不上
       a.textContent = i.text;
       li.appendChild(a);
       list.appendChild(li);
@@ -441,16 +485,36 @@ function showContent(key) {
     const links = Array.from(tocEl.querySelectorAll('a'));
     const spy = () => {
       let activeId = null;
-      const top = docContentEl.scrollTop + 10;
-      for (let h of headings) {
-        if (h.offsetTop <= top) activeId = h.id;
+      const top = scrollHost.scrollTop + 16;
+      for (const h of headings) {
+        if (offsetWithin(h) <= top) activeId = h.id;
       }
       links.forEach(a => {
-        if (a.hash === '#' + activeId) a.classList.add('active'); else a.classList.remove('active');
+        a.classList.toggle('active', a.dataset.anchorId === activeId);
       });
     };
-    docContentEl.addEventListener('scroll', spy);
+    tocScrollHandler = spy;
+    scrollHost.addEventListener('scroll', spy);
     spy();
+  }
+
+  // 文档内的锚点链接（顶部目录、标题旁的 `#`）不能靠浏览器默认行为跳转：
+  // 真正带滚动条的是 `.content`（`.doc-content` 只是内容容器），hash 跳转不会作用到它，
+  // 而且下面的通用链接处理会把 `#id` 当成外链丢给系统浏览器，所以这里统一接管。
+  if (docContentEl) {
+    docContentEl.querySelectorAll('a[href^="#"]').forEach(link => {
+      link.addEventListener('click', event => {
+        event.preventDefault();
+        const id =
+          link.dataset.anchorId ||
+          decodeAnchor((link.getAttribute('href') || '').slice(1));
+        if (!scrollToAnchor(id)) return;
+        // 平滑滚动期间 scrollspy 还没被触发，先立刻给出高亮反馈
+        docContentEl.querySelectorAll('.doc-toc a').forEach(a => {
+          a.classList.toggle('active', (a.dataset.anchorId || '') === id);
+        });
+      });
+    });
   }
 
   const codes = content.querySelectorAll('.doc-content pre > code');
@@ -519,17 +583,37 @@ function showContent(key) {
   });
 
   // 处理超链接点击事件
+  //  - 站外链接（http/https/mailto …）交给 uTools 用系统浏览器打开
+  //  - 文档内锚点（`#` 开头）由上面的 scrollToAnchor 处理，这里直接放行
+  //  - 指向其它命令文档的链接（`/doc/xxx.md`）直接在插件里切换文档
   content.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', (e) => {
+      const href = (link.getAttribute('href') || '').trim();
+      // 文档内锚点：交给 scrollToAnchor 处理，这里不拦截
+      if (href.startsWith('#')) return;
+
       e.preventDefault(); // 阻止默认行为
-      const href = link.getAttribute('href');
-      if (href) {
-        // 使用 uTools 的 API 打开外部链接
-        if (window.utools) {
-          window.utools.shellOpenExternal(href);
-        } else {
-          console.warn('uTools API 不可用，无法打开外部链接:', href);
-        }
+      if (!href) return;
+
+      // `/doc/xxx.md` -> 切换到对应的命令文档
+      const docMatch = href.match(/(?:^|\/)([\w.-]+)\.md$/i);
+      if (docMatch && !/^[a-z][a-z0-9+.-]*:/i.test(href) && docs[docMatch[1]]) {
+        showContent(docMatch[1]);
+        scrollHost.scrollTop = 0;
+        return;
+      }
+
+      // 相对路径链接（图片、附件等）在插件里没有对应页面，不开系统浏览器
+      if (!/^[a-z][a-z0-9+.-]*:/i.test(href) && !href.startsWith('//')) {
+        console.warn('[ArthasDocs] 跳过无法处理的相对链接:', href);
+        return;
+      }
+
+      // 使用 uTools 的 API 打开外部链接
+      if (window.utools && typeof window.utools.shellOpenExternal === 'function') {
+        window.utools.shellOpenExternal(href);
+      } else {
+        console.warn('uTools API 不可用，无法打开外部链接:', href);
       }
     });
   });

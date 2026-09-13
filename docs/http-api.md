@@ -130,11 +130,11 @@ curl -Ss -XPOST http://localhost:8563/api -d '
 ]
 ```
 
-- `type` : 命令结果类型，除了`status`等特殊的几个外，其它的保持与 Arthas 命令名称一致。请参考"[特殊命令结果](#special_command_results)"小节。
+- `type` : 命令结果类型，除了`status`等特殊的几个外，其它的保持与 Arthas 命令名称一致。请参考"[特殊命令结果](#特殊命令结果)"小节。
 - `jobId` : 处理命令的任务 ID。
 - 其它字段为每个不同命令的数据。
 
-注意：也可以使用一次性命令的方式执行 watch/trace 等连续输出的命令，但不能中断命令执行，可能出现长时间没有结束的问题。请参考"[watch 命令输出 map 对象](#change_watch_value_to_map)"小节的示例。
+注意：也可以使用一次性命令的方式执行 watch/trace 等连续输出的命令，但不能中断命令执行，可能出现长时间没有结束的问题。请参考"[watch 命令输出 map 对象](#watch-命令输出-map-对象)"小节的示例。
 
 请尽量按照以下方式处理：
 
@@ -386,7 +386,7 @@ curl -Ss -XPOST http://localhost:8563/api -d '''
 }
 ```
 
-watch 命令结果的`value`为 watch-experss 的值，上面命令中为`{params, returnObj, throwExp}`，所以 watch 结果的 value 为一个长度为 3 的数组，每个元素分别对应相应顺序的表达式。 请参考"[watch 命令输出 map 对象](#change_watch_value_to_map)"小节。
+watch 命令结果的`value`为 watch-experss 的值，上面命令中为`{params, returnObj, throwExp}`，所以 watch 结果的 value 为一个长度为 3 的数组，每个元素分别对应相应顺序的表达式。 请参考"[watch 命令输出 map 对象](#watch-命令输出-map-对象)"小节。
 
 ### 中断命令执行
 

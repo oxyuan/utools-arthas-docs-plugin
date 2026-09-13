@@ -168,6 +168,23 @@ function normalizeCodeFences(text) {
 }
 
 /* ------------------------------------------------------------------ *
+ * 4b. 文档内锚点链接
+ *    上游站点用的是英文锚点 id，而本地文档的标题 id 是由中文标题 slug 出来的，
+ *    直接抄过来的链接（如 `#special_command_results`）点不动，这里换成真实 id。
+ * ------------------------------------------------------------------ */
+const ANCHOR_ALIASES = {
+  special_command_results: '特殊命令结果',
+  change_watch_value_to_map: 'watch-命令输出-map-对象'
+}
+
+function normalizeAnchorLinks(text) {
+  return text.replace(/\]\(#([^)]+)\)/g, (match, id) => {
+    const target = ANCHOR_ALIASES[id]
+    return target ? `](#${target})` : match
+  })
+}
+
+/* ------------------------------------------------------------------ *
  * 5. 引用块 / 提示块
  *
  *    转换器把站点上的容器拍平成了：
@@ -530,6 +547,7 @@ function normalize(text) {
   s = stripHeadingAnchors(s)
   s = normalizeSetextHeadings(s)
   s = normalizeFullwidthSymbols(s)
+  s = normalizeAnchorLinks(s)
   s = normalizeCodeFences(s)
   s = normalizeBlockquotes(s)
   s = normalizeLists(s)
