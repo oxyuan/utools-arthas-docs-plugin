@@ -4,6 +4,13 @@
   "private": true,
   "description": "uTools 插件本体：Arthas 命令参考文档（离线）。此目录可被 uTools 开发者工具直接加载调试，node_modules 必须与 preload.js 同级。",
   "license": "MIT",
+  "author": "oxyuan",
+  "homepage": "https://github.com/oxyuan/utools-arthas-docs-plugin",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oxyuan/utools-arthas-docs-plugin.git",
+    "directory": "plugin"
+  },
   "dependencies": {
     "marked": "^15.0.8"
   }

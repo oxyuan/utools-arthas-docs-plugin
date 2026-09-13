@@ -37,7 +37,7 @@
 
 **方式二：离线安装**
 
-从 [Releases](https://github.com/oxyuan/utools-arthas-docs/releases) 下载 `.upx` 文件，拖入 uTools 窗口即可安装。
+从 [Releases](https://github.com/oxyuan/utools-arthas-docs-plugin/releases) 下载 `.upx` 文件，拖入 uTools 窗口即可安装。
 
 ## 📋 文档列表
 
@@ -105,7 +105,7 @@ npm run strip-debug -- --check # 只检查有没有残留（有残留则退出�
 > 这样 `plugin/` 天然不含 `.git`、`.vscode` 等版本控制 / 编辑器目录，开发者工具可以直接加载它调试。
 
 ```
-utools-arthas-docs/
+utools-arthas-docs-plugin/
 ├── plugin/                     # 插件本体（开发者工具选这个目录调试）
 │   ├── .utoolsignore           # 打包忽略规则（兜底）
 │   ├── package.json            # 插件依赖（marked），node_modules 必须与 preload.js 同级

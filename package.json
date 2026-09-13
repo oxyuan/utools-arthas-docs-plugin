@@ -11,13 +11,13 @@
     "diagnose",
     "documentation"
   ],
-  "homepage": "https://github.com/oxyuan/utools-arthas-docs",
+  "homepage": "https://github.com/oxyuan/utools-arthas-docs-plugin",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/oxyuan/utools-arthas-docs.git"
+    "url": "git+https://github.com/oxyuan/utools-arthas-docs-plugin.git"
   },
   "bugs": {
-    "url": "https://github.com/oxyuan/utools-arthas-docs/issues"
+    "url": "https://github.com/oxyuan/utools-arthas-docs-plugin/issues"
   },
   "license": "MIT",
   "author": "oxyuan",
