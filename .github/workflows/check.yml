@@ -1,0 +1,29 @@
+name: Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: 安装依赖（并清理依赖自带的 *.map）
+        run: npm install
+
+      - name: 文档格式检查
+        run: npm run check
+
+      - name: 生成并校验发布目录 release/
+        run: npm run build:release
+
+      - name: 确认发布目录里没有调试文件
+        run: npm run strip-debug -- release --check
