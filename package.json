@@ -2,7 +2,28 @@
   "name": "utools-arthas-docs",
   "version": "1.0.0",
   "private": true,
-  "description": "uTools 插件：Arthas 命令参考文档（离线）",
+  "description": "uTools 插件：离线查阅 Alibaba Arthas 命令文档",
+  "keywords": [
+    "utools",
+    "utools-plugin",
+    "arthas",
+    "java",
+    "diagnose",
+    "documentation"
+  ],
+  "homepage": "https://github.com/oxyuan/utools-arthas-docs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oxyuan/utools-arthas-docs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/oxyuan/utools-arthas-docs/issues"
+  },
+  "license": "MIT",
+  "author": "oxyuan",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "postinstall": "node scripts/install-plugin.js",
     "install:plugin": "node scripts/install-plugin.js",
