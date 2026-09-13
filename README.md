@@ -1,6 +1,6 @@
 # Arthas Docs uTools Plugin
 
-![Arthas Logo](logo.png)
+![Arthas Logo](images/arthas-logo.png)
 
 ## 📖 项目介绍
 
@@ -57,7 +57,9 @@ arthas/
 ├── plugin.json           # 插件配置文件
 ├── docs-list.json        # 文档列表和描述
 ├── docs-group.json       # 文档分组
-├── logo.png              # 插件图标
+├── images/               # 文档里引用的图片
+│   └── arthas-logo.png   # Arthas 原始横版 Logo（README 展示用）
+├── logo.png              # 插件图标（512x512 正方形，透明底）
 ├── package.json          # 项目依赖配置
 └── README.md             # 项目说明文档
 ```
