@@ -5,6 +5,7 @@
 收录 50 篇文档，覆盖 Arthas 的全部命令、表达式核心变量、HTTP API、批处理、鉴权、JVM 相关工具等；无需联网，输入关键词即可秒开。
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Check](https://github.com/oxyuan/utools-arthas-docs-plugin/actions/workflows/check.yml/badge.svg)](https://github.com/oxyuan/utools-arthas-docs-plugin/actions/workflows/check.yml)
 [![uTools](https://img.shields.io/badge/platform-uTools-2f6bff.svg)](https://u.tools/)
 [![Arthas](https://img.shields.io/badge/Arthas-Docs-00a870.svg)](https://arthas.aliyun.com/doc/)
 [![Node](https://img.shields.io/badge/node-%3E%3D18-339933.svg)](https://nodejs.org/)
