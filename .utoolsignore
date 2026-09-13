@@ -1,9 +1,15 @@
+.git
+.gitignore
+.gitmodules
+.github
+.vscode
 .cursor
 .trae
-.vscode
 .dist
 dist
 build
 .DS_Store
-*~
 *.log
+*~
+*.js.map
+*.css.map

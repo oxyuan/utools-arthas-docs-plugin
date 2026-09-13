@@ -48,8 +48,9 @@ Arthas 是阿里巴巴开源的 Java 应用诊断工具，广泛应用于线上�
 ```
 arthas/
 ├── docs/                 # Arthas 文档 Markdown 文件
-├── scripts/              # 文档格式规范化 / 校验脚本
-│   └── normalize-md.js   # 统一修复 docs/*.md 的格式问题
+├── scripts/              # 构建 / 文档格式规范化脚本
+│   ├── normalize-md.js   # 统一修复 docs/*.md 的格式问题（运行时被 preload 复用）
+│   └── build.js          # 生成干净的发布目录 .dist/（排除 .git 等）
 ├── index.html            # 主界面 HTML
 ├── index.js              # 主要 JavaScript 逻辑
 ├── style.css             # 样式表
@@ -59,7 +60,7 @@ arthas/
 ├── docs-group.json       # 文档分组
 ├── images/               # 文档里引用的图片
 │   └── arthas-logo.png   # Arthas 原始横版 Logo（README 展示用）
-├── logo.png              # 插件图标（512x512 正方形，透明底）
+├── logo.png              # 插件图标（256x256 正方形，发布要求）
 ├── package.json          # 项目依赖配置
 └── README.md             # 项目说明文档
 ```
@@ -152,14 +153,30 @@ npm install
 1. 使用 uTools 开发者工具加载项目目录
 2. 修改代码后刷新插件进行测试
 
-### 构建插件
+### 构建发布包
 
-> 注意：`preload.js` 通过 `require` 加载 `marked`，因此插件目录中的 `node_modules` 必须一起打包（`.utoolsignore` 不要忽略它）。
+> ⚠️ uTools 发布要求：**打包目录里不能包含 `.git/`、`.gitignore`、`.vscode/`、`*.js.map` 等版本控制/编辑器文件**（官方 FAQ「发布时的资源清洁」）。
+> 官方也明确建议「切勿将整个项目的根目录打包成插件应用」，所以不要直接拿仓库根目录去打包。
 
 ```bash
-# 打包插件
-uTools build
+npm run build        # 按白名单生成干净的发布目录 .dist/
+npm run build:check  # 只校验已有的 .dist/
 ```
+
+`scripts/build.js` 会：
+
+1. 只把插件运行时真正需要的文件复制到 `.dist/`（`plugin.json`、入口文件、`docs/`、`images/`、`node_modules/`、`preload.js` 依赖的 `scripts/normalize-md.js` 等）；
+2. 顺手排掉 `.git/`、`.gitignore`、`.vscode/`、`.cursor/`、`.trae/`、`.DS_Store`、`*.js.map` 等发布禁止项；
+3. 校验产物：禁止文件为零、`plugin.json` 声明的入口都存在、`logo.png` 是正方形、
+   `docs-list.json` 与 `docs/` 数量一致、被 `preload.js` `require` 的脚本能在 Electron 加载器下编译。
+
+然后在 uTools 开发者工具里选择 **`.dist/` 目录**进行打包/发布。
+
+> 两个容易踩的坑：
+> 1. `preload.js` 运行时会 `require('marked')` 和 `require('./scripts/normalize-md.js')`，
+>    所以 `node_modules/` 与 `scripts/normalize-md.js` **必须**跟着打包；
+> 2. 被 `require` 的脚本**不能带 `#!` shebang**，uTools 的 preload 加载器不会剥掉它，
+>    否则会直接抛 `SyntaxError` 导致插件打不开。
 
 ## 📄 许可证
 
