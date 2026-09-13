@@ -1,55 +1,111 @@
-# Arthas Docs uTools Plugin
+# uTools Arthas Docs
 
-![Arthas Logo](images/arthas-logo.png)
+在 [uTools](https://u.tools/) 里**离线**查阅 [Alibaba Arthas](https://arthas.aliyun.com/) 命令文档的插件。
 
-## 📖 项目介绍
+收录 50 篇文档，覆盖 Arthas 的全部命令、表达式核心变量、HTTP API、批处理、鉴权、JVM 相关工具等；无需联网，输入关键词即可秒开。
 
-Arthas Docs uTools Plugin 是一个基于 [uTools](https://u.tools/) 平台的插件，为 Java 开发者提供了 [Alibaba Arthas](https://arthas.aliyun.com/) 诊断工具的离线文档查询功能。该插件集成了 Arthas 4.0.4 版本的完整文档，让开发者能够随时随地查阅 Arthas 的命令用法、功能特性和使用案例，无需联网即可获取所需信息。
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![uTools](https://img.shields.io/badge/platform-uTools-2f6bff.svg)](https://u.tools/)
+[![Arthas](https://img.shields.io/badge/Arthas-Docs-00a870.svg)](https://arthas.aliyun.com/doc/)
+[![Node](https://img.shields.io/badge/node-%3E%3D18-339933.svg)](https://nodejs.org/)
 
-Arthas 是阿里巴巴开源的 Java 应用诊断工具，广泛应用于线上问题排查、性能分析和系统监控。本插件旨在提高开发者使用 Arthas 的效率，通过优化的界面和便捷的文档访问方式，帮助用户快速掌握 Arthas 的各项功能。
+> ⚠️ 本项目是**非官方**项目，与阿里巴巴集团及 Arthas 团队无关，详见文末「声明与致谢」。
 
-## ✨ 主要特性
+## ✨ 功能特性
 
-- **完整文档集成**：包含 Arthas 4.0.4 版本的全部命令和功能文档
-- **离线使用**：无需网络连接，随时查阅文档
-- **优化的阅读体验**：
-  - 响应式设计，适配不同屏幕尺寸
-  - 代码块语法高亮
-  - 自动文本换行，提高可读性
-  - 表格内容优化显示
-- **快速检索**：通过 uTools 关键词 "arthas"、"docs" 或 "java诊断" 快速启动
-- **暗黑模式支持**：自动适配系统主题设置
-- **界面交互优化**：
-  - 可调整侧边栏宽度
-  - 命令分类清晰展示
-  - 文档内容格式优化
+- **完整文档**：50 篇 Markdown 文档，含全部 Arthas 命令与高级功能说明
+- **完全离线**：文档随插件打包，无网络请求，内网环境也能用
+- **阅读体验**
+  - 每篇文档顶部自动生成目录，点击跳转、滚动高亮当前章节
+  - 站内交叉引用（文档里的 `/doc/xxx.md` 链接）直接在插件内切换，不跳出插件
+  - 代码块语法高亮 + 一键复制，命令行里直接粘贴
+  - 自动适配系统暗色模式
+- **查找方便**：左侧文档列表 + 分组筛选（命令列表 / 其它说明），侧边栏宽度可拖动调整
+- **触发简单**：关键词 `arthas`、`docs`、`java诊断` 都可以唤起
 
-## 🔧 技术架构
+## 🖼️ 界面预览
 
-### 核心组件
+| 亮色主题 | 暗色主题 |
+| --- | --- |
+| ![亮色](assets/screenshot-light.png) | ![暗色](assets/screenshot-dark.png) |
 
-1. **前端界面**：
-   - HTML5 + CSS3 构建的响应式界面
-   - 纯 JavaScript 实现的交互逻辑，无框架依赖
-   - 分离的侧边栏和内容区域设计
+## 📦 安装
 
-2. **文档处理**：
-   - 使用 Marked.js 解析 Markdown 文档
-   - 自定义渲染器增强代码块显示
-   - 文档内容动态加载机制
+**方式一：uTools 应用市场**
 
-3. **uTools 集成**：
-   - 基于 uTools 插件 API 开发
-   - 利用 Node.js 能力读取本地文件
-   - 插件生命周期管理
+在 uTools 搜索框输入 `arthas`、`docs` 或 `java诊断`，在「插件应用市场」中安装；也可以直接在应用市场里搜索本插件。
+
+**方式二：离线安装**
+
+从 [Releases](https://github.com/oxyuan/utools-arthas-docs/releases) 下载 `.upx` 文件，拖入 uTools 窗口即可安装。
+
+## 📋 文档列表
+
+共 50 篇，分组与 Arthas 官方文档一致：
+
+| 分类 | 文档 |
+| --- | --- |
+| jvm 相关 | `dashboard` `getstatic` `heapdump` `jvm` `logger` `mbean` `memory` `ognl` `perfcounter` `sysenv` `sysprop` `thread` `vmoption` `vmtool` |
+| class/classloader 相关 | `classloader` `dump` `jad` `mc` `redefine` `retransform` `sc` `sm` |
+| monitor / watch / trace 相关 | `monitor` `stack` `trace` `tt` `watch` |
+| profiler / 火焰图 | `profiler` `jfr` |
+| 基础命令 | `base64` `cat` `cls` `echo` `grep` `help` `history` `keymap` `pwd` `quit` `reset` `session` `stop` `tee` `version` |
+| 其它 | `auth`（鉴权）、`options`（全局开关）、`commands`（命令列表）、`advice-class`（表达式核心变量）、`batch-support`（批处理）、`http-api`（HTTP API） |
+
+## 🛠️ 开发
+
+**环境要求**：Node.js 18+、uTools 开发者工具
+
+```bash
+npm install          # 安装 plugin/ 依赖（marked）并自动清理 .map
+```
+
+> 根目录的 `postinstall` 会自动执行 `npm install --prefix plugin`，因为 `require('marked')`
+> 必须能在 `preload.js` 同级找到 `node_modules`；安装完还会删掉依赖自带的 sourcemap。
+> 需要单独重跑时用 `npm run install:plugin`。
+
+### 调试
+
+在 uTools 开发者工具中加载 **`plugin/` 目录**（即 `plugin.json` 所在目录），修改代码后刷新即可。
+`plugin/` 里只有插件本体，不含 `.git`、`.vscode` 等版本控制 / 编辑器目录。
+
+### 打包发布
+
+> uTools 要求**发布目录不能包含调试文件与版本控制目录**，例如
+> `*.js.map`、`*.css.map`、`*.js.gz`、`*.css.gz`、`.git/`、`.vscode/` 等；
+> 官方也建议「切勿将整个项目的根目录打包成插件应用」。
+
+```bash
+npm install              # 安装 plugin/ 依赖并清理 .map
+npm run build:release    # 生成干净的 release/ 目录（不含 .git）
+```
+
+然后在 uTools 开发者工具中选择 **`release/` 目录**进行打包 / 发布。
+
+`scripts/build-release.js` 会把 `plugin/` 复制一份到 `release/`，并：
+
+1. 跳过所有调试文件（`*.js.map` / `*.css.map` / `*.js.gz` / `*.css.gz`）以及
+   `.git`、`.gitignore`、`.vscode`、`.cursor`、`.trae`、`.DS_Store`、`package-lock.json`；
+2. 校验产物：禁止文件为零、`plugin.json` 声明的入口都存在、`logo.png` 为正方形、
+   `docs-list.json` 与 `docs/` 数量一致、`preload.js` `require` 的本地模块都已打包，
+   并且能在 Electron 式加载器下编译。
+
+相关命令：
+
+```bash
+npm run check:release          # 只校验已有的 release/
+npm run strip-debug            # 手动清理 plugin/ 里的调试文件
+npm run strip-debug -- release # 清理指定目录（可传多个）
+npm run strip-debug -- --check # 只检查有没有残留（有残留则退出码 1）
+```
 
 ### 目录结构
 
 > 仓库根目录只放工程文件（`.git`、`scripts/`、`README.md` …），**插件本体全部在 `plugin/`**。
-> 这样 `plugin/` 天然不含 `.git`、`.vscode` 等版本控制/编辑器目录，开发者工具可以直接加载它调试。
+> 这样 `plugin/` 天然不含 `.git`、`.vscode` 等版本控制 / 编辑器目录，开发者工具可以直接加载它调试。
 
 ```
-arthas/
+utools-arthas-docs/
 ├── plugin/                     # 插件本体（开发者工具选这个目录调试）
 │   ├── .utoolsignore           # 打包忽略规则（兜底）
 │   ├── package.json            # 插件依赖（marked），node_modules 必须与 preload.js 同级
@@ -69,149 +125,81 @@ arthas/
 │   ├── install-plugin.js       # 安装 plugin/ 依赖并清理 .map（postinstall）
 │   ├── strip-debug.js          # 清理 *.js.map / *.css.map / *.js.gz / *.css.gz
 │   └── build-release.js        # 生成干净的 release/
+├── assets/                     # README 截图
+├── .github/workflows/check.yml # CI：校验文档格式与发布目录
 ├── release/                    # 打包产物（git 忽略），在开发者工具里选它发布
+├── LICENSE                     # MIT
+├── NOTICE.md                   # 第三方内容与商标声明
 ├── package.json                # 仓库脚本（不参与打包）
 └── README.md
 ```
 
 ### 文档格式规范
 
-`plugin/docs/*.md` 由 Arthas 官方文档页面转换而来，历史上累积了不少转换痕迹（标题锚点、被压平的提示块、丢失的表格内联代码、缺失的代码块语言标注等）。
+`plugin/docs/*.md` 由 Arthas 官方文档页面转换而来，历史上累积了不少转换痕迹（标题锚点、
+被压平的提示块、丢失的表格内联代码、缺失的代码块语言标注等）。
 
-`plugin/scripts/normalize-md.js` 负责把这些内容统一整理成规范 Markdown，并在 `preload.js` 中复用，保证「磁盘上的文档」和「实际渲染结果」一致：
+`plugin/scripts/normalize-md.js` 负责把这些内容统一整理成规范 Markdown，并在 `preload.js`
+中复用，保证「磁盘上的文档」和「实际渲染结果」一致：
 
 ```bash
 npm run normalize   # 就地修复 plugin/docs/*.md
 npm run check       # 只检查是否存在格式差异（有差异时退出码为 1）
 ```
 
-> ⚠️ `plugin/scripts/normalize-md.js` 会被 `preload.js` 直接 `require`，因此**不要给它加 `#!` shebang**：
-> uTools 的 preload 运行在 Electron 的 vm 中，其模块加载器不会剥掉 shebang，会直接抛
-> `SyntaxError: Invalid or unexpected token`，导致整个插件打不开。
-
 规范化的内容包括：
 
-- 移除标题里的锚点残留，如 `## [#](#参数说明) 参数说明` -> `## 参数说明`
+- 移除标题里的锚点残留，如 `## [#](#参数说明) 参数说明` → `## 参数说明`
 - 修复被转换器压平的提示块，统一为 `> **提示**` 形式（渲染时转换为 Callout）
 - 修复引用块「懒延续」导致正文被吞进引用的问题
 - 修复挤到同一行的列表项、丢失缩进的嵌套列表
 - 恢复表格单元格里被吞掉的行内代码（如 `[m <arg>]`）
 - 修正代码块语言标注，清理不可见控制字符与全角符号误用
-- 统一空行、列表符号和分隔线写法
+- 统一图片路径为相对插件根目录，统一空行、列表符号和分隔线写法
 
-## 🚀 功能模块
+### 两个容易踩的坑
 
-### 1. 文档浏览
+1. `preload.js` 运行时会 `require('marked')` 和 `require('./scripts/normalize-md.js')`，
+   所以 `node_modules/` 与 `plugin/scripts/normalize-md.js` **必须**跟着打包；
+2. 被 `require` 的脚本**不能带 `#!` shebang**。uTools 的 preload 运行在 Electron 的 vm 中，
+   其模块加载器不会剥掉 shebang，会直接抛 `SyntaxError: Invalid or unexpected token`，
+   导致整个插件打不开。
 
-- **命令列表**：展示所有 Arthas 命令及其简要描述
-- **命令详情**：提供每个命令的详细用法、参数说明和使用示例
-- **核心功能**：包含 Arthas 的核心功能文档，如类增强、表达式支持等
+## ❓ 常见问题
 
-### 2. 界面交互
+**怎么快速打开某篇文档？**
+在 uTools 搜索框输入关键词（`arthas` / `docs` / `java诊断`）进入插件后，继续输入关键字再回车，
+即可直接定位到对应文档（例如输入 `watch`）。侧边栏顶部的下拉框可以按「全部文档 / 命令列表 /
+其它说明」筛选。
 
-- **侧边栏调整**：可拖动分隔条调整侧边栏宽度
-- **文档分组**：按「命令列表 / 其它说明」等分组筛选文档
-- **文档导航**：每篇文档顶部自动生成目录，点击即可跳转到对应章节，滚动时高亮当前章节
-- **链接处理**：站外链接交给系统浏览器打开，`/doc/xxx.md` 形式的交叉引用直接在插件内切换文档
-- **通知系统**：提供操作反馈的通知机制
+**文档和官方最新版不一致？**
+文档内容取自 Arthas 官方文档站，可能与最新版本存在差异，请以
+[官方文档](https://arthas.aliyun.com/doc/) 为准。欢迎提 issue 或 PR 补充。
 
-### 3. 代码展示
+**能自己拿这套框架放别的文档吗？**
+可以。文档内容与渲染逻辑是分开的：只需要改 `plugin/docs/*.md`、`plugin/docs-list.json`、
+`plugin/docs-group.json`，再改掉 `plugin.json` 里的指令关键词即可。
 
-- **语法高亮**：支持多种语言的代码高亮显示
-- **特殊标记**：对 Arthas 命令、选项等进行特殊标记
-- **自适应显示**：代码块水平滚动，保持格式完整性
+## ⚖️ 声明与致谢
 
-## 📋 命令列表
+- 本项目为**个人开源的非官方项目**，与阿里巴巴集团、Arthas 团队没有任何隶属关系，
+  也不代表其立场。
+- 文档内容整理自 [Alibaba Arthas](https://github.com/alibaba/arthas) 官方文档
+  （<https://arthas.aliyun.com/doc/>），版权归阿里巴巴及其贡献者所有，以
+  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) 授权。
+- `logo.png` 使用了 Arthas 项目的名称与标识，仅用于说明本插件与 Arthas 的关联，
+  相关权利归阿里巴巴所有；如不合适请告知，会立即更换。
+- 运行时依赖 [marked](https://github.com/markedjs/marked)（MIT）。
 
-插件包含以下 Arthas 命令的详细文档：
-
-| 基础命令 | 类相关 | 方法相关 | 增强相关 | 系统相关 |
-|---------|-------|---------|---------|---------|
-| help    | sc    | sm      | watch   | dashboard |
-| cls     | jad   | trace   | monitor | thread    |
-| session | dump  | stack   | tt      | jvm       |
-| reset   | mc    |         | profiler| sysenv    |
-| version | redefine |      |         | vmoption  |
-| quit    | retransform |   |         | sysprop   |
-| stop    | classloader |   |         | perfcounter |
-
-此外，还包括 HTTP API、批处理支持、鉴权等高级功能的文档。
-
-## 🔍 使用方法
-
-1. 在 uTools 中安装 Arthas Docs 插件
-2. 通过关键词 "arthas"、"docs" 或 "java诊断" 启动插件
-3. 在左侧菜单中选择需要查看的命令或功能
-4. 在右侧内容区域阅读详细文档
-
-## 🛠️ 开发与构建
-
-### 环境要求
-
-- Node.js 18.0 或更高版本
-- uTools 开发者工具
-
-### 安装依赖
-
-```bash
-npm install          # 安装 plugin/ 依赖（marked）并自动清理 .map
-```
-
-根目录的 `postinstall` 会自动执行 `npm install --prefix plugin`（因为 `require('marked')`
-必须能在 `preload.js` 同级找到 `node_modules`），并顺手删掉依赖里自带的 sourcemap。
-单独重跑：`npm run install:plugin`。
-
-### 开发调试
-
-在 uTools 开发者工具中加载 **`plugin/` 目录**（`plugin.json` 所在目录）。
-`plugin/` 里只有插件本体，不会包含 `.git`、`.vscode` 等版本控制/编辑器目录。
-
-### 打包 / 发布
-
-> ⚠️ uTools 要求**发布目录不能包含调试文件与版本控制目录**，例如：
-> `*.js.map`、`*.css.map`、`*.js.gz`、`*.css.gz`、`.git/`、`.vscode/` 等；
-> 官方也建议「切勿将整个项目的根目录打包成插件应用」。
-
-```bash
-npm install              # 安装 plugin/ 依赖并清理 .map
-npm run build:release    # 生成干净的 release/ 目录（不含 .git）
-```
-
-然后在 uTools 开发者工具中选择 **`release/` 目录**进行打包 / 发布。
-
-`scripts/build-release.js` 会把 `plugin/` 复制一份到 `release/`，并：
-
-1. 跳过所有调试文件（`*.js.map` / `*.css.map` / `*.js.gz` / `*.css.gz`）与
-   `.git`、`.gitignore`、`.vscode`、`.cursor`、`.trae`、`.DS_Store`、`package-lock.json`；
-2. 校验产物：禁止文件为零、`plugin.json` 声明的入口都存在、`logo.png` 是正方形、
-   `docs-list.json` 与 `docs/` 数量一致、`preload.js` `require` 的本地模块都打包了，
-   并且能在 Electron 式加载器下编译。
-
-相关命令：
-
-```bash
-npm run check:release          # 只校验已有的 release/
-npm run strip-debug            # 手动清理 plugin/ 里的调试文件
-npm run strip-debug -- release # 清理指定目录（可传多个）
-npm run strip-debug -- --check # 只检查有没有残留（有则退出码 1）
-```
-
-> 两个容易踩的坑：
-> 1. `preload.js` 运行时会 `require('marked')` 和 `require('./scripts/normalize-md.js')`，
->    所以 `node_modules/` 与 `plugin/scripts/normalize-md.js` **必须**跟着打包；
-> 2. 被 `require` 的脚本**不能带 `#!` shebang**，uTools 的 preload 加载器不会剥掉它，
->    否则会直接抛 `SyntaxError` 导致插件打不开。
+完整的第三方内容清单见 [NOTICE.md](NOTICE.md)。
 
 ## 📄 许可证
 
-本项目采用 MIT 许可证。详见 [LICENSE](LICENSE) 文件。
+[MIT](LICENSE) © oxyuan
 
 ## 🔗 相关链接
 
-- [Arthas 官方文档](https://arthas.aliyun.com/doc/)
-- [uTools 官网](https://u.tools/)
+- [Alibaba Arthas 官方文档](https://arthas.aliyun.com/doc/)
 - [Alibaba Arthas GitHub](https://github.com/alibaba/arthas)
-
----
-
-**注意**：本插件为非官方 Arthas 文档工具，仅用于学习和参考。如有任何问题，请参考 Arthas 官方文档。
+- [uTools 官网](https://u.tools/)
+- [uTools 开发者文档](https://www.u-tools.cn/docs/developer/)
