@@ -1,4 +1,15 @@
-const { fs, path, marked, __dirname } = window.nodeAPI;
+const nodeAPI = window.nodeAPI || {};
+const { fs, path, marked, slugify, __dirname } = nodeAPI;
+const normalizeMarkdown =
+  typeof nodeAPI.normalizeMarkdown === 'function'
+    ? nodeAPI.normalizeMarkdown
+    : (text) => String(text == null ? '' : text);
+
+if (!nodeAPI.fs) {
+  console.error(
+    '[arthas] window.nodeAPI 不可用：preload.js 未成功加载，文档将无法读取。请查看上方的 preload 报错信息。'
+  );
+}
 
 const PLACEHOLDER_TEXT = '搜索命令...空格全屏';
 let previousSearchText = ''; // 用于检测全屏状态转换和普通搜索内容变化
@@ -8,6 +19,24 @@ let lastActiveKeyBeforeFullscreen = null; // 用于记住全屏前的选中项
 const docsDir = path.join(__dirname, 'docs');
 let docs = {};
 let menuItemsElements = []; // <--- 添加：用于存储菜单项DOM元素
+
+function extractTOC(raw) {
+  const toc = [];
+  if (typeof marked.lexer === 'function') {
+    const tokens = marked.lexer(raw);
+    tokens.forEach(t => {
+      if (t.type === 'heading' && t.depth >= 2 && t.depth <= 4) {
+        toc.push({ id: slugify(t.text), text: t.text, level: t.depth });
+      }
+    });
+  } else {
+    raw.replace(/^(#{2,4})\s+(.+)$/gm, (m, hashes, text) => {
+      toc.push({ id: slugify(text), text, level: hashes.length });
+      return m;
+    });
+  }
+  return toc;
+}
 
 // 加载文档
 function loadDocs() {
@@ -24,10 +53,12 @@ function loadDocs() {
 
       if (fs.existsSync(filePath)) {
         const content = fs.readFileSync(filePath, 'utf-8');
+        const normalized = normalizeMarkdown(content);
         docs[key] = {
           title: key,
           description: docsMap[key],
-          content: marked.parse(content)
+          content: marked.parse(normalized),
+          toc: extractTOC(normalized)
         };
       } else {
         console.warn('Document not found:', filePath);
@@ -284,6 +315,7 @@ function handleCommandSearch(action) {
     const originalKey = itemElement.dataset.key;
     const commandKey = originalKey ? originalKey.toLowerCase() : '';
     const titleElement = itemElement.querySelector('.menu-item-title');
+    const descElement = itemElement.querySelector('.menu-item-desc');
 
     if (commandKey.includes(lowerSearchText)) { // Match against trimmed, lowercased search text
       itemElement.style.display = '';
@@ -301,10 +333,27 @@ function handleCommandSearch(action) {
           titleElement.textContent = originalKey;
         }
       }
+      if (descElement) {
+        const desc = (docs[originalKey] && docs[originalKey].description) ? String(docs[originalKey].description) : '';
+        const d = desc.toLowerCase();
+        const idx = d.indexOf(lowerSearchText);
+        if (idx !== -1 && lowerSearchText) {
+          const b = desc.substring(0, idx);
+          const m = desc.substring(idx, idx + lowerSearchText.length);
+          const a = desc.substring(idx + lowerSearchText.length);
+          descElement.innerHTML = `${escapeHtml(b)}<span class="highlight">${escapeHtml(m)}</span>${escapeHtml(a)}`;
+        } else {
+          descElement.textContent = desc;
+        }
+      }
     } else {
       itemElement.style.display = 'none';
       if (titleElement) {
         titleElement.textContent = originalKey;
+      }
+      if (descElement) {
+        const desc = (docs[originalKey] && docs[originalKey].description) ? String(docs[originalKey].description) : '';
+        descElement.textContent = desc;
       }
     }
   });
@@ -370,6 +419,103 @@ function showContent(key) {
     wrapper.className = 'table-wrapper';
     table.parentNode.insertBefore(wrapper, table);
     wrapper.appendChild(table);
+  });
+
+  const docContentEl = content.querySelector('.doc-content');
+  if (doc.toc && doc.toc.length && docContentEl) {
+    const tocEl = document.createElement('nav');
+    tocEl.className = 'doc-toc';
+    const list = document.createElement('ul');
+    doc.toc.forEach(i => {
+      const li = document.createElement('li');
+      li.className = 'toc-level-' + i.level;
+      const a = document.createElement('a');
+      a.href = '#' + i.id;
+      a.textContent = i.text;
+      li.appendChild(a);
+      list.appendChild(li);
+    });
+    tocEl.appendChild(list);
+    docContentEl.insertAdjacentElement('afterbegin', tocEl);
+    const headings = Array.from(docContentEl.querySelectorAll('h2, h3, h4'));
+    const links = Array.from(tocEl.querySelectorAll('a'));
+    const spy = () => {
+      let activeId = null;
+      const top = docContentEl.scrollTop + 10;
+      for (let h of headings) {
+        if (h.offsetTop <= top) activeId = h.id;
+      }
+      links.forEach(a => {
+        if (a.hash === '#' + activeId) a.classList.add('active'); else a.classList.remove('active');
+      });
+    };
+    docContentEl.addEventListener('scroll', spy);
+    spy();
+  }
+
+  const codes = content.querySelectorAll('.doc-content pre > code');
+  codes.forEach(code => {
+    const pre = code.parentElement;
+    const btn = document.createElement('button');
+    btn.className = 'copy-code-btn';
+    btn.textContent = '复制';
+    btn.addEventListener('click', () => {
+      const text = code.innerText;
+      if (window.utools && window.utools.copyText) {
+        window.utools.copyText(text);
+      } else if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text);
+      }
+    });
+    pre.style.position = 'relative';
+    pre.appendChild(btn);
+  });
+
+  const calloutTypes = [
+    { key: '提示', cls: 'tip' },
+    { key: '注意', cls: 'note' },
+    { key: '警告', cls: 'warning' },
+    { key: '小技巧', cls: 'info' },
+    { key: '说明', cls: 'info' }
+  ];
+
+  // (1) 文档里的容器统一规范化为 `> **提示**` 的引用块形式，
+  //     这里把整个引用块转换成带样式的 callout。
+  content.querySelectorAll('.doc-content blockquote').forEach(blockquote => {
+    const first = blockquote.querySelector('p');
+    if (!first || !first.querySelector('strong')) return;
+    const title = (first.textContent || '').trim().replace(/[:：]\s*$/, '');
+    const type = calloutTypes.find(ct => ct.key === title);
+    if (!type) return;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'callout ' + type.cls;
+    const head = document.createElement('strong');
+    head.textContent = title;
+    wrap.appendChild(head);
+
+    first.remove();
+    while (blockquote.firstChild) wrap.appendChild(blockquote.firstChild);
+    blockquote.replaceWith(wrap);
+  });
+
+  // (2) 普通段落以「提示：」/「注意：」开头的形式
+  content.querySelectorAll('.doc-content p').forEach(p => {
+    const t = (p.textContent || '').trim();
+    for (const ct of calloutTypes) {
+      if (t.startsWith(ct.key + '：') || t.startsWith(ct.key + ':')) {
+        const wrap = document.createElement('div');
+        wrap.className = 'callout ' + ct.cls;
+        const strong = document.createElement('strong');
+        strong.textContent = ct.key;
+        const rest = document.createElement('span');
+        rest.textContent = t.slice(ct.key.length + 1);
+        wrap.appendChild(strong);
+        wrap.appendChild(rest);
+        p.replaceWith(wrap);
+        break;
+      }
+    }
   });
 
   // 处理超链接点击事件
