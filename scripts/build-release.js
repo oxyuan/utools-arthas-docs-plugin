@@ -52,13 +52,14 @@ const REQUIRED = [
   'style.css',
   'preload.js',
   'logo.png',
-  'docs-list.json',
-  'docs-group.json',
   'package.json',
   'node_modules/marked/package.json',
   'scripts/normalize-md.js', // preload.js 运行时 require 的就是它
   'images/arthas-web-ui.png'
 ]
+
+/* 文档按版本分目录：docs/<version>/ */
+const VERSION_DIR_RE = /^\d+\.\d+\.\d+$/
 
 /* ------------------------------------------------------------------ *
  * 复制 / 清理
@@ -160,14 +161,40 @@ function validate() {
     }
   }
 
-  // 5. 文档齐全
-  if (isFile('docs-list.json')) {
-    const keys = Object.keys(JSON.parse(fs.readFileSync(path.join(OUT, 'docs-list.json'), 'utf8')))
-    for (const key of keys) {
-      if (!isFile(`docs/${key}.md`)) problems.push(`docs-list.json 里的 ${key} 缺少 docs/${key}.md`)
+  // 5. 文档齐全（每个版本目录各自一份 docs-list.json / docs-group.json）
+  const docsRoot = path.join(OUT, 'docs')
+  const versionDirs = fs.existsSync(docsRoot)
+    ? fs.readdirSync(docsRoot).filter((name) => {
+        if (!VERSION_DIR_RE.test(name)) return false
+        return fs.statSync(path.join(docsRoot, name)).isDirectory()
+      }).sort()
+    : []
+
+  if (!versionDirs.length) {
+    problems.push('docs/ 下没有任何版本目录（docs/<version>/）')
+  }
+
+  for (const version of versionDirs) {
+    const dir = path.join(docsRoot, version)
+    const listPath = path.join(dir, 'docs-list.json')
+    if (!fs.existsSync(listPath)) {
+      problems.push(`版本 ${version} 缺少 docs-list.json`)
+      continue
     }
-    const mdCount = fs.readdirSync(path.join(OUT, 'docs')).filter((f) => f.endsWith('.md')).length
-    if (mdCount !== keys.length) problems.push(`docs 数量(${mdCount}) 与 docs-list.json(${keys.length}) 不一致`)
+    if (!fs.existsSync(path.join(dir, 'docs-group.json'))) {
+      problems.push(`版本 ${version} 缺少 docs-group.json`)
+    }
+
+    const keys = Object.keys(JSON.parse(fs.readFileSync(listPath, 'utf8')))
+    for (const key of keys) {
+      if (!fs.existsSync(path.join(dir, `${key}.md`))) {
+        problems.push(`版本 ${version} 的 docs-list.json 里 ${key} 缺少 ${key}.md`)
+      }
+    }
+    const mdCount = fs.readdirSync(dir).filter((f) => f.endsWith('.md') && f !== 'README.md').length
+    if (mdCount !== keys.length) {
+      problems.push(`版本 ${version} 的文档数量(${mdCount}) 与 docs-list.json(${keys.length}) 不一致`)
+    }
   }
 
   // 6. 被 preload require 的本地模块必须跟着打包，且不能带 shebang

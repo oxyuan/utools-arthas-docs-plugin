@@ -9,13 +9,33 @@
 <body>
   <div class="container">
     <div class="sidebar">
-      <div class="category-switcher">
-        <div class="category-dropdown">
-          <button id="categoryButton">全部文档</button>
-          <div id="categoryDropdown" class="dropdown-content">
-            <a href="#" data-category="all" class="active">全部文档</a>
-            <!-- 分组选项将通过JavaScript动态添加 -->
+      <div class="switcher" id="switcher">
+        <div class="category-switcher">
+          <div class="category-dropdown">
+            <button id="categoryButton">全部文档</button>
+            <div id="categoryDropdown" class="dropdown-content">
+              <a href="#" data-category="all" class="active">全部文档</a>
+              <!-- 分组选项将通过JavaScript动态添加 -->
+            </div>
           </div>
+        </div>
+
+        <!-- 左上角版本区：左下-右上斜切的弧形小角，悬停展开 -->
+        <div class="version-corner" id="versionCorner">
+          <button
+            id="versionButton"
+            class="version-trigger"
+            type="button"
+            title="切换文档版本"
+            aria-haspopup="true"
+            aria-expanded="false"
+            aria-label="切换文档版本"
+          >
+            <span class="version-short" id="versionShort">4.3.5</span>
+            <span class="version-full">版本 <b id="versionFull">4.3.5</b></span>
+            <span class="version-caret" aria-hidden="true"></span>
+          </button>
+          <div id="versionDropdown" class="dropdown-content version-dropdown"></div>
         </div>
       </div>
 

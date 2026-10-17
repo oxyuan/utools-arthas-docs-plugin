@@ -176,13 +176,26 @@ body, html {
 }
 /* 文档目录（TOC）
    目录里的 <ul>/<li> 也会被下面的 `.doc-content ul`、`.doc-content li` 命中，
-   它们带的 `padding-left: 2em` 会让文字离左侧竖线空出一大段空白，
+   它们带的 `padding-left: 2em` 会让文字离左侧空出一大段空白，
    所以这里统一用 `.doc-content .doc-toc` 提高优先级把缩进清掉，
-   只保留下面按层级设置的 14px/28px 缩进。 */
+   只保留下面按层级设置的缩进。
+   早期版本用的是 `border-left` 竖线，观感很像引用块，现改为浅色卡片，
+   并用 1 / 1.1 / 1.1.1 的多级序号体现层级。 */
 .doc-content .doc-toc {
-  border-left: 3px solid #eaecef;
-  padding-left: 12px;
-  margin: 0 0 16px 0;
+  background: #f7f8fa;
+  border: 1px solid #eceef1;
+  border-radius: 8px;
+  margin: 0 0 20px 0;
+  padding: 10px 14px 12px 14px;
+}
+.doc-content .doc-toc::before {
+  content: "目录";
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #8a93a0;
 }
 .doc-content .doc-toc ul {
   list-style: none;
@@ -190,21 +203,31 @@ body, html {
   padding: 0;
 }
 .doc-content .doc-toc li {
-  margin: 3px 0;
+  margin: 2px 0;
   padding-left: 0;
   line-height: 1.6;
 }
 .doc-content .doc-toc li.toc-level-2 { padding-left: 0; }
-.doc-content .doc-toc li.toc-level-3 { padding-left: 14px; }
-.doc-content .doc-toc li.toc-level-4 { padding-left: 28px; }
+.doc-content .doc-toc li.toc-level-3 { padding-left: 16px; }
+.doc-content .doc-toc li.toc-level-4 { padding-left: 32px; }
 .doc-content .doc-toc a {
-  color: #6a737d;
+  display: flex;
+  gap: 8px;
+  color: #57606a;
   font-size: 13px;
   text-decoration: none;
   cursor: pointer;
 }
+.doc-content .doc-toc .toc-num {
+  flex: 0 0 auto;
+  min-width: var(--toc-num-width, 1.6em);
+  color: #9aa3ae;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
 .doc-content .doc-toc a:hover { color: #0366d6; text-decoration: underline; }
 .doc-content .doc-toc a.active { color: #0366d6; font-weight: 600; }
+.doc-content .doc-toc a.active .toc-num { color: #0366d6; }
 
 /* 确保 h1 元素没有额外的 margin */
 .content h1 {
@@ -639,10 +662,16 @@ body, html {
     background-color: #2c3a4a;
   }
   /* 选择器要和亮色主题保持一致，否则优先级更低会被覆盖 */
-  .doc-content .doc-toc { border-left-color: #3a3a3a; }
+  .doc-content .doc-toc {
+    background: #1c2129;
+    border-color: #30363d;
+  }
+  .doc-content .doc-toc::before { color: #6e7681; }
   .doc-content .doc-toc a { color: #8b949e; }
+  .doc-content .doc-toc .toc-num { color: #6e7681; }
   .doc-content .doc-toc a:hover { color: #58a6ff; }
   .doc-content .doc-toc a.active { color: #58a6ff; }
+  .doc-content .doc-toc a.active .toc-num { color: #58a6ff; }
 }
 
 /* 分隔条样式 */
@@ -712,6 +741,177 @@ body, html {
   }
 }
 
+/* ------------------------------------------------------------------ *
+ * 顶栏：左下 → 右上 斜切的双区设计
+ *
+ *   左上角（弧形小块） = 版本切换，默认只露出一小角，悬停展开
+ *   其余区域           = 文档分组下拉，交互与改造前完全一致
+ * ------------------------------------------------------------------ */
+.switcher {
+  position: relative;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e0e0e0;
+  flex-shrink: 0;
+}
+
+.switcher .category-switcher {
+  padding: 0;
+  border-bottom: 0;
+}
+
+/* 版本角标：默认宽度很小，只放得下一个版本号 */
+.version-corner {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  width: 54px;
+  height: calc(100% - 16px);
+  z-index: 5;
+  transition: width 0.26s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.version-corner:hover,
+.version-corner:focus-within,
+.version-corner.open {
+  width: 116px;
+}
+
+/* 弧形描边：比按钮本体大半个像素，露出一条细边 */
+.version-corner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #ccdffb;
+  clip-path: ellipse(100% 100% at 0 0);
+  pointer-events: none;
+}
+
+.version-trigger {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(150deg, #f4f8ff 0%, #e7f1ff 55%, #dbe8ff 100%);
+  color: #2c5aa0;
+  font-family: inherit;
+  cursor: pointer;
+  overflow: hidden;
+  /* 四分之一的椭圆，形成从底部左侧到右上角的弧线切边 */
+  clip-path: ellipse(calc(100% - 1.5px) 100% at 0 0);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.version-trigger:focus {
+  outline: none;
+}
+
+.version-trigger:focus-visible {
+  outline: 2px solid #4c8dff;
+  outline-offset: -2px;
+}
+
+.version-short,
+.version-full {
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  line-height: 1;
+  white-space: nowrap;
+  transition: opacity 0.16s ease;
+}
+
+.version-short {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.95;
+}
+
+.version-full {
+  font-size: 11.5px;
+  font-weight: 500;
+  opacity: 0;
+}
+
+.version-full b {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.version-caret {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  width: 0;
+  height: 0;
+  margin-top: -1px;
+  border-left: 3.5px solid transparent;
+  border-right: 3.5px solid transparent;
+  border-top: 4px solid currentColor;
+  opacity: 0;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.version-corner:hover .version-short,
+.version-corner:focus-within .version-short,
+.version-corner.open .version-short {
+  opacity: 0;
+}
+
+.version-corner:hover .version-full,
+.version-corner:focus-within .version-full,
+.version-corner.open .version-full {
+  opacity: 1;
+}
+
+.version-corner:hover .version-caret,
+.version-corner:focus-within .version-caret,
+.version-corner.open .version-caret {
+  opacity: 0.75;
+}
+
+.version-corner.open .version-caret {
+  transform: translateY(-60%) rotate(180deg);
+}
+
+/* 版本下拉：挂在角标下方，样式复用 .dropdown-content */
+.version-dropdown {
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 152px;
+  margin-top: 0;
+  z-index: 30;
+  animation: fadeIn 0.16s ease-in-out;
+}
+
+.version-dropdown a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+
+.version-dropdown .version-tag {
+  font-size: 10px;
+  line-height: 1;
+  padding: 2px 5px;
+  border-radius: 8px;
+  background: #eef4ff;
+  color: #4b76b8;
+  flex-shrink: 0;
+}
+
+.version-dropdown .version-tag.is-latest {
+  background: #e6f7ff;
+  color: #1890ff;
+}
+
 .category-switcher {
   padding: 8px 10px;
   border-bottom: 1px solid #e0e0e0;
@@ -755,6 +955,18 @@ body, html {
 
 #categoryButton:active {
   background-color: #e0e0e0;
+}
+
+/* 版本角标占用左侧空间，分组按钮的文字整体右移；
+   角标展开时进一步右移，避免两块内容压在一起 */
+.switcher #categoryButton {
+  padding-left: 46px;
+  transition: padding-left 0.26s cubic-bezier(0.22, 0.61, 0.36, 1),
+    background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.switcher.version-expanded #categoryButton {
+  padding-left: 94px;
 }
 
 .dropdown-content {
@@ -810,6 +1022,29 @@ body, html {
 
 /* 暗黑模式下的类别切换按钮 */
 @media (prefers-color-scheme: dark) {
+  .switcher {
+    border-bottom-color: #333;
+  }
+
+  .version-corner::before {
+    background: #3d5175;
+  }
+
+  .version-trigger {
+    background: linear-gradient(150deg, #23324c 0%, #1f2b40 55%, #1b2434 100%);
+    color: #9dc0ef;
+  }
+
+  .version-dropdown .version-tag {
+    background: #2b3a52;
+    color: #9dc0ef;
+  }
+
+  .version-dropdown .version-tag.is-latest {
+    background: #1e3a5f;
+    color: #6cb2ff;
+  }
+
   .category-switcher {
     border-bottom-color: #333;
   }

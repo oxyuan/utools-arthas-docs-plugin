@@ -27,6 +27,40 @@ const path = require('path')
 
 const DOCS_DIR = path.join(__dirname, '..', 'docs')
 
+/* 文档按版本分目录存放：docs/<version>/*.md
+ * 同时兼容早期扁平存放的 docs/*.md（若存在）。
+ * 版本目录下的 README.md 是索引，不做规范化。 */
+const VERSION_DIR_RE = /^\d+\.\d+\.\d+$/
+
+function collectDocFiles() {
+  const files = []
+  let entries = []
+  try {
+    entries = fs.readdirSync(DOCS_DIR).sort()
+  } catch (err) {
+    return files
+  }
+
+  for (const name of entries) {
+    const full = path.join(DOCS_DIR, name)
+    let stat
+    try {
+      stat = fs.statSync(full)
+    } catch (err) {
+      continue
+    }
+    if (stat.isDirectory()) {
+      if (!VERSION_DIR_RE.test(name)) continue
+      for (const f of fs.readdirSync(full).filter(x => x.endsWith('.md') && x !== 'README.md').sort()) {
+        files.push({ rel: `${name}/${f}`, full: path.join(full, f) })
+      }
+    } else if (name.endsWith('.md')) {
+      files.push({ rel: name, full })
+    }
+  }
+  return files
+}
+
 /** 提示类容器的标题，对应站点的 ::: tip / ::: warning 等容器 */
 const CALLOUT_TITLES = ['提示', '注意', '警告', '小技巧', '说明']
 
@@ -588,26 +622,22 @@ function main() {
     return
   }
 
-  const files = fs
-    .readdirSync(DOCS_DIR)
-    .filter(f => f.endsWith('.md'))
-    .sort()
+  const files = collectDocFiles()
 
   let changed = 0
-  for (const file of files) {
-    const full = path.join(DOCS_DIR, file)
+  for (const { rel, full } of files) {
     const raw = fs.readFileSync(full, 'utf8')
     const normalized = normalize(raw)
     if (normalized === raw) {
-      console.log(`[ok]    ${file}`)
+      console.log(`[ok]    ${rel}`)
       continue
     }
     changed++
     if (checkOnly) {
-      console.log(`[diff]  ${file}`)
+      console.log(`[diff]  ${rel}`)
     } else {
       fs.writeFileSync(full, normalized, 'utf8')
-      console.log(`[fixed] ${file}`)
+      console.log(`[fixed] ${rel}`)
     }
   }
 

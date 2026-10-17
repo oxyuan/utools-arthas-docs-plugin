@@ -16,8 +16,10 @@ let previousSearchText = ''; // 用于检测全屏状态转换和普通搜索内
 let lastActiveKeyBeforeFullscreen = null; // 用于记住全屏前的选中项
 let tocScrollHandler = null; // 当前文档的目录 scrollspy 监听器（切换文档时需要解绑）
 
-// 修改 docs 目录路径为相对路径
-const docsDir = path.join(__dirname, 'docs');
+// 文档根目录：docs/<version>/ 下按版本分目录存放
+const DOCS_ROOT = path.join(__dirname, 'docs');
+// 当前生效的版本目录，由 setVersion() 赋值
+let docsDir = DOCS_ROOT;
 let docs = {};
 let menuItemsElements = []; // <--- 添加：用于存储菜单项DOM元素
 
@@ -39,14 +41,67 @@ function extractTOC(raw) {
   return toc;
 }
 
+// 扫描版本目录：docs/1.2.3/ 这样的 semver 目录才算一个版本
+const VERSION_DIR_RE = /^\d+\.\d+\.\d+$/;
+
+function compareVersionDesc(a, b) {
+  const pa = a.split('.').map(Number);
+  const pb = b.split('.').map(Number);
+  for (let i = 0; i < 3; i++) {
+    if (pa[i] !== pb[i]) return pb[i] - pa[i]; // 降序：新版本在前
+  }
+  return 0;
+}
+
+function listVersions() {
+  try {
+    return fs
+      .readdirSync(DOCS_ROOT)
+      .filter(name => {
+        if (!VERSION_DIR_RE.test(name)) return false;
+        try {
+          return fs.statSync(path.join(DOCS_ROOT, name)).isDirectory();
+        } catch (err) {
+          return false;
+        }
+      })
+      .sort(compareVersionDesc);
+  } catch (err) {
+    console.error('[arthas] 读取版本目录失败：', err);
+    return [];
+  }
+}
+
+// 没有 docs-list.json 时，直接按目录里的 md 文件兜底生成
+function buildDocsMapFromDisk() {
+  const map = {};
+  try {
+    fs.readdirSync(docsDir)
+      .filter(name => name.endsWith('.md') && name !== 'README.md')
+      .sort()
+      .forEach(name => {
+        map[name.replace(/\.md$/, '')] = '';
+      });
+  } catch (err) {
+    console.error('[arthas] 扫描文档目录失败：', err);
+  }
+  return map;
+}
+
 // 加载文档
 function loadDocs() {
+  docs = {};
   try {
-    // 调试：打印路径
-    const listPath = path.join(__dirname, 'docs-list.json');
+    const listPath = path.join(docsDir, 'docs-list.json');
 
-    // 加载 docs-list.json
-    const docsMap = JSON.parse(fs.readFileSync(listPath, 'utf-8'));
+    // 加载当前版本的 docs-list.json，缺失时按目录扫描兜底
+    let docsMap;
+    if (fs.existsSync(listPath)) {
+      docsMap = JSON.parse(fs.readFileSync(listPath, 'utf-8'));
+    } else {
+      console.warn('[arthas] 未找到 docs-list.json，按目录扫描：', listPath);
+      docsMap = buildDocsMapFromDisk();
+    }
 
     // 遍历文档映射
     Object.keys(docsMap).forEach(key => {
@@ -404,9 +459,10 @@ function escapeHtml(unsafe) {
 function showContent(key) {
   const content = document.getElementById('content');
   const doc = docs[key];
+  if (!content || !doc) return;
   content.innerHTML = `
     <h1>${key}</h1>
-    <div class="doc-description">${doc.description}</div>
+    <div class="doc-description">${doc.description || ''}</div>
     <div class="doc-content">${doc.content}</div>
   `;
 
@@ -469,17 +525,36 @@ function showContent(key) {
     const tocEl = document.createElement('nav');
     tocEl.className = 'doc-toc';
     const list = document.createElement('ul');
+    // 多级编号：h2 → 1，h3 → 1.1，h4 → 1.1.1。
+    // 标题层级可能跳级（例如 h2 下面直接是 h4），这里统一按「上一级的下一级」
+    // 处理，保证编号连续，不会出现 1.0.1 这种读不懂的序号。
+    const counters = [];
+    let maxNumLength = 1;
     doc.toc.forEach(i => {
+      const depth = Math.max(1, Math.min(i.level - 1, counters.length + 1));
+      counters.length = depth;
+      counters[depth - 1] = (counters[depth - 1] || 0) + 1;
+      const number = counters.join('.');
+      maxNumLength = Math.max(maxNumLength, number.length);
+
       const li = document.createElement('li');
-      li.className = 'toc-level-' + i.level;
+      // 缩进按「实际层级」而不是原始标题级别：首个标题是 h3 时它等价于一级条目，
+      // 不能挂着 toc-level-3 缩进 16px，否则和编号 1 对不上。
+      li.className = 'toc-level-' + (depth + 1);
       const a = document.createElement('a');
       a.href = '#' + i.id;
       a.dataset.anchorId = i.id; // 直接用原始 id，避免 hash 被百分号编码后比对不上
-      a.textContent = i.text;
+      const num = document.createElement('span');
+      num.className = 'toc-num';
+      num.textContent = number;
+      a.appendChild(num);
+      a.appendChild(document.createTextNode(i.text));
       li.appendChild(a);
       list.appendChild(li);
     });
     tocEl.appendChild(list);
+    // 让所有条目的文字左边缘对齐：编号列宽度取当前文档最长编号
+    tocEl.style.setProperty('--toc-num-width', maxNumLength + 'ch');
     docContentEl.insertAdjacentElement('afterbegin', tocEl);
     const headings = Array.from(docContentEl.querySelectorAll('h2, h3, h4'));
     const links = Array.from(tocEl.querySelectorAll('a'));
@@ -683,27 +758,45 @@ const categoryDropdown = document.getElementById('categoryDropdown');
 let currentCategory = 'all';
 let docGroups = [];
 
-// 加载文档分组
+// 加载文档分组（按当前版本目录）
 function loadDocGroups() {
+  docGroups = [];
   try {
-    const groupsPath = path.join(__dirname, 'docs-group.json');
+    const groupsPath = path.join(docsDir, 'docs-group.json');
     if (fs.existsSync(groupsPath)) {
       docGroups = JSON.parse(fs.readFileSync(groupsPath, 'utf-8'));
-
-      // 添加分组选项到下拉菜单
-      docGroups.forEach(group => {
-        const option = document.createElement('a');
-        option.href = '#';
-        option.setAttribute('data-category', group.name);
-        option.textContent = group.name;
-        categoryDropdown.appendChild(option);
-      });
     } else {
       console.warn('文档分组文件不存在:', groupsPath);
     }
   } catch (error) {
     console.error('加载文档分组失败:', error);
+    docGroups = [];
   }
+  rebuildCategoryOptions();
+}
+
+// 重建分组下拉：切换版本后分组会变，必须整组重画
+function rebuildCategoryOptions() {
+  if (!categoryDropdown) return;
+
+  currentCategory = 'all';
+  categoryButton.textContent = '全部文档';
+  categoryDropdown.innerHTML = '';
+
+  const allOption = document.createElement('a');
+  allOption.href = '#';
+  allOption.setAttribute('data-category', 'all');
+  allOption.textContent = '全部文档';
+  allOption.classList.add('active');
+  categoryDropdown.appendChild(allOption);
+
+  docGroups.forEach(group => {
+    const option = document.createElement('a');
+    option.href = '#';
+    option.setAttribute('data-category', group.name);
+    option.textContent = group.name;
+    categoryDropdown.appendChild(option);
+  });
 }
 
 // 根据分组过滤菜单
@@ -762,6 +855,8 @@ function filterMenuByCategory(category) {
 // 点击按钮显示下拉菜单
 categoryButton.addEventListener('click', (e) => {
   e.stopPropagation();
+  // 分组下拉与版本下拉互斥
+  if (typeof closeVersionDropdown === 'function') closeVersionDropdown();
   categoryDropdown.classList.toggle('show');
 
   // 如果下拉菜单已经显示，添加点击其他地方关闭的事件监听器
@@ -805,6 +900,193 @@ categoryDropdown.addEventListener('click', (e) => {
 // 点击下拉菜单项不应该关闭下拉菜单
 categoryDropdown.addEventListener('click', (e) => {
   e.stopPropagation();
+});
+
+/* ------------------------------------------------------------------ *
+ * 版本切换（左上角弧形角标）
+ *
+ *   默认只占很小一块，鼠标移上去才展开；点击弹出所有已收录的版本目录。
+ *   版本列表来自 docs/ 下的 semver 目录，新版本排在最前。
+ * ------------------------------------------------------------------ */
+const versionCorner = document.getElementById('versionCorner');
+const versionButton = document.getElementById('versionButton');
+const versionDropdown = document.getElementById('versionDropdown');
+const versionShortLabel = document.getElementById('versionShort');
+const versionFullLabel = document.getElementById('versionFull');
+const switcherEl = document.getElementById('switcher');
+
+const VERSION_STORE_KEY = 'arthas-docs:version';
+let versions = [];
+let currentVersion = '';
+
+// 角标展开时，分组按钮的文字跟着右移，避免两块内容叠在一起
+function setVersionExpanded(expanded) {
+  if (switcherEl) switcherEl.classList.toggle('version-expanded', !!expanded);
+}
+
+if (versionCorner) {
+  versionCorner.addEventListener('mouseenter', () => setVersionExpanded(true));
+  versionCorner.addEventListener('mouseleave', () => {
+    if (!versionDropdown.classList.contains('show')) setVersionExpanded(false);
+  });
+}
+
+if (versionButton) {
+  versionButton.addEventListener('focus', () => setVersionExpanded(true));
+  versionButton.addEventListener('blur', () => {
+    if (!versionDropdown.classList.contains('show') && !versionCorner.matches(':hover')) {
+      setVersionExpanded(false);
+    }
+  });
+}
+
+function readStoredVersion() {
+  try {
+    if (window.utools && utools.dbStorage) return utools.dbStorage.getItem(VERSION_STORE_KEY);
+  } catch (err) {
+    /* 忽略：回落 localStorage */
+  }
+  try {
+    return localStorage.getItem(VERSION_STORE_KEY);
+  } catch (err) {
+    return null;
+  }
+}
+
+function storeVersion(version) {
+  try {
+    if (window.utools && utools.dbStorage) utools.dbStorage.setItem(VERSION_STORE_KEY, version);
+  } catch (err) {
+    /* 忽略 */
+  }
+  try {
+    localStorage.setItem(VERSION_STORE_KEY, version);
+  } catch (err) {
+    /* 忽略 */
+  }
+}
+
+function buildVersionOptions() {
+  if (!versionDropdown) return;
+  versionDropdown.innerHTML = '';
+  const latest = versions[0];
+
+  versions.forEach(version => {
+    const item = document.createElement('a');
+    item.href = '#';
+    item.setAttribute('data-version', version);
+    if (version === currentVersion) item.classList.add('active');
+
+    const label = document.createElement('span');
+    label.textContent = version;
+    item.appendChild(label);
+
+    const tag = document.createElement('span');
+    tag.className = 'version-tag' + (version === latest ? ' is-latest' : '');
+    tag.textContent = version === latest ? '最新' : '旧版';
+    item.appendChild(tag);
+
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeVersionDropdown();
+      setVersion(version);
+    });
+
+    versionDropdown.appendChild(item);
+  });
+}
+
+function updateVersionUI() {
+  if (!currentVersion) return;
+  if (versionShortLabel) versionShortLabel.textContent = currentVersion;
+  if (versionFullLabel) versionFullLabel.textContent = currentVersion;
+  buildVersionOptions();
+}
+
+function openVersionDropdown() {
+  versionDropdown.classList.add('show');
+  versionCorner.classList.add('open');
+  versionButton.setAttribute('aria-expanded', 'true');
+  setVersionExpanded(true);
+  setTimeout(() => document.addEventListener('click', closeVersionDropdown), 0);
+}
+
+function closeVersionDropdown() {
+  if (versionDropdown) versionDropdown.classList.remove('show');
+  if (versionCorner) versionCorner.classList.remove('open');
+  if (versionButton) versionButton.setAttribute('aria-expanded', 'false');
+  // 鼠标还停在角标上时保持展开，避免文字跳回去
+  if (versionCorner && !versionCorner.matches(':hover')) setVersionExpanded(false);
+  document.removeEventListener('click', closeVersionDropdown);
+}
+
+// 切换版本：换目录 -> 重载文档 -> 重画分组与菜单 -> 回到第一篇
+function setVersion(version) {
+  if (!version) return;
+  if (version === currentVersion && Object.keys(docs).length) return;
+
+  const previous = currentVersion;
+  currentVersion = version;
+  docsDir = path.join(DOCS_ROOT, version);
+
+  docs = {};
+  currentActiveKey = '';
+
+  loadDocs();
+  loadDocGroups();
+  initMenu();
+
+  const keys = Object.keys(docs);
+  const contentEl = document.getElementById('content');
+  if (keys.length) {
+    showContent(keys[0]);
+  } else if (contentEl) {
+    contentEl.innerHTML = '<h1>文档为空</h1><p>该版本目录下没有可用的 Markdown 文档。</p>';
+  }
+
+  updateVersionUI();
+  storeVersion(version);
+
+  if (previous && previous !== version) {
+    showNotification(`已切换到 ${version} 版本文档`, 'success');
+  }
+}
+
+function initVersions() {
+  versions = listVersions();
+  if (!versions.length) {
+    console.error('[arthas] docs/ 下没有找到任何版本目录');
+    loadDocs();
+    loadDocGroups();
+    initMenu();
+    const keys = Object.keys(docs);
+    if (keys.length) showContent(keys[0]);
+    return;
+  }
+
+  const stored = readStoredVersion();
+  const start = versions.includes(stored) ? stored : versions[0];
+  setVersion(start);
+}
+
+if (versionButton) {
+  versionButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (versionDropdown.classList.contains('show')) {
+      closeVersionDropdown();
+    } else {
+      // 分组下拉和版本下拉互斥
+      categoryDropdown.classList.remove('show');
+      openVersionDropdown();
+    }
+  });
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && versionDropdown && versionDropdown.classList.contains('show')) {
+    closeVersionDropdown();
+  }
 });
 
 // 统一聚焦搜索框的方法
@@ -905,10 +1187,8 @@ document.addEventListener('keydown', (e) => {
 // <--- 修改：DOMContentLoaded 事件监听器 -->
 document.addEventListener('DOMContentLoaded', () => {
   console.log('[ArthasDocs] DOMContentLoaded event fired.');
-  loadDocs();
-  loadDocGroups(); 
-  
-  initMenu(); 
+  // 版本目录 -> 文档 -> 分组 -> 菜单 -> 首页文档，全部在 initVersions 里串起来
+  initVersions();
 
   // 移除了此处的 setSubInput 调用，统一由 onPluginEnter 管理初始状态
   // if (window.utools) {
@@ -916,11 +1196,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // }
   // ... fallback input 保留 ...
 
-  // 默认显示第一个文档
-  const keys = Object.keys(docs);
-  if (keys.length > 0) {
-    showContent(keys[0]);
-  }
+  // 首页文档已在 initVersions() 里跟随当前版本渲染，这里不再重复渲染
 
   // onPluginEnter 中已处理初始的 setSubInput
   const searchInputElement = document.getElementById('search-input'); // Renamed for clarity

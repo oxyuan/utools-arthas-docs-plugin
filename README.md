@@ -2,7 +2,7 @@
 
 在 [uTools](https://u.tools/) 里**离线**查阅 [Alibaba Arthas](https://arthas.aliyun.com/) 命令文档的插件。
 
-收录 50 篇文档，覆盖 Arthas 的全部命令、表达式核心变量、HTTP API、批处理、鉴权、JVM 相关工具等；无需联网，输入关键词即可秒开。
+收录 Arthas 4.3.5 全量文档（76 篇），并保留 4.1.3 旧版文档（50 篇），覆盖全部命令、表达式核心变量、HTTP API、批处理、鉴权、JVM 相关工具等；无需联网，输入关键词即可秒开，左上角还可一键切换文档版本。
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Check](https://github.com/oxyuan/utools-arthas-docs-plugin/actions/workflows/check.yml/badge.svg)](https://github.com/oxyuan/utools-arthas-docs-plugin/actions/workflows/check.yml)
@@ -14,14 +14,15 @@
 
 ## ✨ 功能特性
 
-- **完整文档**：50 篇 Markdown 文档，含全部 Arthas 命令与高级功能说明
+- **完整文档**：4.3.5 共 76 篇、4.1.3 共 50 篇 Markdown 文档，含全部 Arthas 命令与高级功能说明
+- **多版本切换**：左上角斜切角标显示当前版本，悬停展开即可切到其他版本文档
 - **完全离线**：文档随插件打包，无网络请求，内网环境也能用
 - **阅读体验**
-  - 每篇文档顶部自动生成目录，点击跳转、滚动高亮当前章节
+  - 每篇文档顶部自动生成目录，`1 / 1.1 / 1.1.1` 多级编号体现层级，点击跳转、滚动高亮当前章节
   - 站内交叉引用（文档里的 `/doc/xxx.md` 链接）直接在插件内切换，不跳出插件
   - 代码块语法高亮 + 一键复制，命令行里直接粘贴
   - 自动适配系统暗色模式
-- **查找方便**：左侧文档列表 + 分组筛选（命令列表 / 其它说明），侧边栏宽度可拖动调整
+- **查找方便**：左侧文档列表 + 分组筛选（命令列表 / 使用指南），侧边栏宽度可拖动调整
 - **触发简单**：关键词 `arthas`、`docs`、`java诊断` 都可以唤起
 
 ## 🖼️ 界面预览
@@ -42,16 +43,13 @@
 
 ## 📋 文档列表
 
-共 50 篇，分组与 Arthas 官方文档一致：
+文档按版本分目录存放（`plugin/docs/<version>/`），每个版本各有一份 `docs-list.json`（菜单顺序与描述）、
+`docs-group.json`（分组）和 `README.md`（索引）。左侧下拉按分组筛选，4.3.5 的分组如下：
 
-| 分类 | 文档 |
-| --- | --- |
-| jvm 相关 | `dashboard` `getstatic` `heapdump` `jvm` `logger` `mbean` `memory` `ognl` `perfcounter` `sysenv` `sysprop` `thread` `vmoption` `vmtool` |
-| class/classloader 相关 | `classloader` `dump` `jad` `mc` `redefine` `retransform` `sc` `sm` |
-| monitor / watch / trace 相关 | `monitor` `stack` `trace` `tt` `watch` |
-| profiler / 火焰图 | `profiler` `jfr` |
-| 基础命令 | `base64` `cat` `cls` `echo` `grep` `help` `history` `keymap` `pwd` `quit` `reset` `session` `stop` `tee` `version` |
-| 其它 | `auth`（鉴权）、`options`（全局开关）、`commands`（命令列表）、`advice-class`（表达式核心变量）、`batch-support`（批处理）、`http-api`（HTTP API） |
+| 分类 | 篇数 | 文档 |
+| --- | --- | --- |
+| 命令列表 | 50 | `commands` `dashboard` `getstatic` `heapdump` `jvm` `logger` `mbean` `memory` `ognl` `perfcounter` `sysenv` `sysprop` `thread` `vmoption` `vmtool` `classloader` `classloader-metaspace` `dump` `jad` `mc` `redefine` `retransform` `sc` `sm` `monitor` `line` `stack` `trace` `tt` `watch` `profiler` `jfr` `auth` `options` `external-command` `grep` `base64` `cat` `cls` `echo` `help` `history` `keymap` `pwd` `quit` `reset` `session` `stop` `tee` `version` |
+| 使用指南 | 26 | `advanced-use` `advice-class` `agent` `ai` `arthas-properties` `arthas3` `async` `batch-support` `contact-us` `docker` `download` `faq` `groovy` `http-api` `idea-plugin` `install-detail` `manual-install` `mcp-server` `ognl-express` `quick-start` `release-notes` `save-log` `spring-boot-starter` `start-arthas` `tunnel` `web-console` |
 
 ## 🛠️ 开发
 
@@ -88,7 +86,7 @@ npm run build:release    # 生成干净的 release/ 目录（不含 .git）
 1. 跳过所有调试文件（`*.js.map` / `*.css.map` / `*.js.gz` / `*.css.gz`）以及
    `.git`、`.gitignore`、`.vscode`、`.cursor`、`.trae`、`.DS_Store`、`package-lock.json`；
 2. 校验产物：禁止文件为零、`plugin.json` 声明的入口都存在、`logo.png` 为正方形、
-   `docs-list.json` 与 `docs/` 数量一致、`preload.js` `require` 的本地模块都已打包，
+   每个版本的 `docs-list.json` 与对应文档数量一致、`preload.js` `require` 的本地模块都已打包，
    并且能在 Electron 式加载器下编译。
 
 相关命令：
@@ -116,9 +114,9 @@ utools-arthas-docs-plugin/
 │   ├── index.js                # 主要逻辑
 │   ├── style.css               # 样式表
 │   ├── logo.png                # 插件图标（256x256 正方形）
-│   ├── docs/                   # 50 篇 Arthas 文档
-│   ├── docs-list.json          # 文档列表和描述
-│   ├── docs-group.json         # 文档分组
+│   ├── docs/                   # 文档根目录，按版本分文件夹
+│   │   ├── 4.3.5/              # 4.3.5 全量文档（76 篇）+ docs-list.json / docs-group.json / README.md
+│   │   └── 4.1.3/              # 4.1.3 旧版文档（50 篇）+ 同名清单文件
 │   ├── images/                 # 文档引用的图片
 │   └── scripts/
 │       └── normalize-md.js     # 文档格式规范化（运行时被 preload 复用）

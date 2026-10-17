@@ -41,3 +41,6 @@ Thumbs.db
 
 .cursor/
 .trae/
+
+# Local agent workspace
+.workbuddy/
