@@ -265,6 +265,21 @@ body, html {
   color: #24292e;
 }
 
+/* 标题自带的层级序号（与顶部目录同一套编号，跳转过来能对上位置） */
+.doc-content h2,
+.doc-content h3,
+.doc-content h4 {
+  position: relative;
+}
+
+.doc-content .heading-num {
+  margin-right: 0.34em;
+  color: #8b949e;
+  font-weight: 500;
+  font-size: 0.78em;
+  font-variant-numeric: tabular-nums;
+}
+
 .doc-content p {
   margin: 1em 0;
   line-height: 1.7;
@@ -524,8 +539,8 @@ body, html {
  .callout.note { border-left-color: #1890ff; }
  .callout.warning { border-left-color: #faad14; }
  .callout.info { border-left-color: #6f42c1; }
- .md-anchor { position: relative; margin-right: 6px; }
- .md-anchor::after { content: '#'; opacity: 0; transition: opacity 0.2s; color: #d0d7de; margin-right: 6px; }
+ .md-anchor { position: absolute; left: -0.95em; top: 0; margin: 0; }
+ .md-anchor::after { content: '#'; opacity: 0; transition: opacity 0.2s; color: #d0d7de; }
  .doc-content h2:hover .md-anchor::after,
  .doc-content h3:hover .md-anchor::after,
  .doc-content h4:hover .md-anchor::after { opacity: 1; }
@@ -759,12 +774,12 @@ body, html {
   border-bottom: 0;
 }
 
-/* 版本角标：默认宽度很小，只放得下一个版本号 */
+/* 版本角标：默认宽度很小，只放得下一个版本号 + 下拉箭头 */
 .version-corner {
   position: absolute;
   top: 8px;
   left: 10px;
-  width: 54px;
+  width: 62px;
   height: calc(100% - 16px);
   z-index: 5;
   transition: width 0.26s cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -773,7 +788,7 @@ body, html {
 .version-corner:hover,
 .version-corner:focus-within,
 .version-corner.open {
-  width: 116px;
+  width: 88px;
 }
 
 /* 弧形描边：比按钮本体大半个像素，露出一条细边 */
@@ -799,7 +814,21 @@ body, html {
   overflow: hidden;
   /* 四分之一的椭圆，形成从底部左侧到右上角的弧线切边 */
   clip-path: ellipse(calc(100% - 1.5px) 100% at 0 0);
-  transition: background 0.2s ease, color 0.2s ease;
+  /* 一点点内高光和投影，让角标看起来是「可按的控件」而不是装饰 */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    0 1px 2px rgba(44, 90, 160, 0.18);
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.version-trigger:hover {
+  background: linear-gradient(150deg, #e9f2ff 0%, #d5e7ff 55%, #c3daff 100%);
+  color: #1f4a8c;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 2px 6px rgba(44, 90, 160, 0.26);
+}
+
+.version-trigger:active {
+  background: linear-gradient(150deg, #dceaff 0%, #c8ddff 55%, #b6d1ff 100%);
 }
 
 .version-trigger:focus {
@@ -828,6 +857,14 @@ body, html {
   letter-spacing: 0.2px;
   font-variant-numeric: tabular-nums;
   opacity: 0.95;
+  padding-right: 9px; /* 给右侧常驻的下拉箭头留位置 */
+}
+
+.version-short::before {
+  content: 'v';
+  font-weight: 500;
+  opacity: 0.7;
+  margin-right: 0.5px;
 }
 
 .version-full {
@@ -843,7 +880,7 @@ body, html {
 
 .version-caret {
   position: absolute;
-  right: 8px;
+  right: 7px;
   top: 50%;
   width: 0;
   height: 0;
@@ -851,7 +888,8 @@ body, html {
   border-left: 3.5px solid transparent;
   border-right: 3.5px solid transparent;
   border-top: 4px solid currentColor;
-  opacity: 0;
+  /* 常驻显示：这是「这里可以点、点了会展开」最直接的提示 */
+  opacity: 0.5;
   transition: opacity 0.16s ease, transform 0.16s ease;
 }
 
@@ -870,11 +908,11 @@ body, html {
 .version-corner:hover .version-caret,
 .version-corner:focus-within .version-caret,
 .version-corner.open .version-caret {
-  opacity: 0.75;
+  opacity: 0.85;
 }
 
 .version-corner.open .version-caret {
-  transform: translateY(-60%) rotate(180deg);
+  transform: rotate(180deg);
 }
 
 /* 版本下拉：挂在角标下方，样式复用 .dropdown-content */
@@ -960,13 +998,39 @@ body, html {
 /* 版本角标占用左侧空间，分组按钮的文字整体右移；
    角标展开时进一步右移，避免两块内容压在一起 */
 .switcher #categoryButton {
-  padding-left: 46px;
+  padding-left: 54px;
   transition: padding-left 0.26s cubic-bezier(0.22, 0.61, 0.36, 1),
     background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .switcher.version-expanded #categoryButton {
-  padding-left: 94px;
+  padding-left: 90px;
+}
+
+/* 窄窗口侧边栏只有 180px，展开会挤掉分组按钮的文字：
+   这里保持紧凑宽度，只靠投影、箭头和点击态提示可交互 */
+@media (max-width: 768px) {
+  .version-corner:hover,
+  .version-corner:focus-within,
+  .version-corner.open {
+    width: 62px;
+  }
+
+  .switcher.version-expanded #categoryButton {
+    padding-left: 54px;
+  }
+
+  .version-corner:hover .version-short,
+  .version-corner:focus-within .version-short,
+  .version-corner.open .version-short {
+    opacity: 0.95;
+  }
+
+  .version-corner:hover .version-full,
+  .version-corner:focus-within .version-full,
+  .version-corner.open .version-full {
+    opacity: 0;
+  }
 }
 
 .dropdown-content {
@@ -1033,6 +1097,19 @@ body, html {
   .version-trigger {
     background: linear-gradient(150deg, #23324c 0%, #1f2b40 55%, #1b2434 100%);
     color: #9dc0ef;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 1px 3px rgba(0, 0, 0, 0.45);
+  }
+
+  .version-trigger:hover {
+    background: linear-gradient(150deg, #2c3f5e 0%, #26364e 55%, #202b3d 100%);
+    color: #bcd8ff;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09),
+      0 2px 8px rgba(0, 0, 0, 0.55);
+  }
+
+  .version-trigger:active {
+    background: linear-gradient(150deg, #1d2a41 0%, #1a2436 55%, #171f2d 100%);
   }
 
   .version-dropdown .version-tag {

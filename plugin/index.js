@@ -23,24 +23,6 @@ let docsDir = DOCS_ROOT;
 let docs = {};
 let menuItemsElements = []; // <--- 添加：用于存储菜单项DOM元素
 
-function extractTOC(raw) {
-  const toc = [];
-  if (typeof marked.lexer === 'function') {
-    const tokens = marked.lexer(raw);
-    tokens.forEach(t => {
-      if (t.type === 'heading' && t.depth >= 2 && t.depth <= 4) {
-        toc.push({ id: slugify(t.text), text: t.text, level: t.depth });
-      }
-    });
-  } else {
-    raw.replace(/^(#{2,4})\s+(.+)$/gm, (m, hashes, text) => {
-      toc.push({ id: slugify(text), text, level: hashes.length });
-      return m;
-    });
-  }
-  return toc;
-}
-
 // 扫描版本目录：docs/1.2.3/ 这样的 semver 目录才算一个版本
 const VERSION_DIR_RE = /^\d+\.\d+\.\d+$/;
 
@@ -113,8 +95,7 @@ function loadDocs() {
         docs[key] = {
           title: key,
           description: docsMap[key],
-          content: marked.parse(normalized),
-          toc: extractTOC(normalized)
+          content: marked.parse(normalized)
         };
       } else {
         console.warn('Document not found:', filePath);
@@ -521,32 +502,56 @@ function showContent(key) {
     tocScrollHandler = null;
   }
 
-  if (doc.toc && doc.toc.length && docContentEl) {
-    const tocEl = document.createElement('nav');
-    tocEl.className = 'doc-toc';
-    const list = document.createElement('ul');
-    // 多级编号：h2 → 1，h3 → 1.1，h4 → 1.1.1。
-    // 标题层级可能跳级（例如 h2 下面直接是 h4），这里统一按「上一级的下一级」
-    // 处理，保证编号连续，不会出现 1.0.1 这种读不懂的序号。
+  // 目录与正文标题共用同一套编号：先按渲染后的 h2~h4 顺序算出编号，
+  // 一边写进标题本身，一边用来生成目录。这样点击目录跳过去后，
+  // 目标标题前面就带着同一个序号，能立刻确认自己落在哪一节。
+  const headingEls = docContentEl
+    ? Array.from(docContentEl.querySelectorAll('h2, h3, h4')).filter(
+        h => h.parentElement === docContentEl // 忽略引用块里的标题
+      )
+    : [];
+  const tocItems = [];
+  {
     const counters = [];
-    let maxNumLength = 1;
-    doc.toc.forEach(i => {
-      const depth = Math.max(1, Math.min(i.level - 1, counters.length + 1));
+    headingEls.forEach(h => {
+      const level = Number(h.tagName.slice(1));
+      // 多级编号：h2 → 1，h3 → 1.1，h4 → 1.1.1。
+      // 标题层级可能跳级（例如 h2 下面直接是 h4），这里统一按「上一级的下一级」
+      // 处理，保证编号连续，不会出现 1.0.1 这种读不懂的序号。
+      const depth = Math.max(1, Math.min(level - 1, counters.length + 1));
       counters.length = depth;
       counters[depth - 1] = (counters[depth - 1] || 0) + 1;
       const number = counters.join('.');
-      maxNumLength = Math.max(maxNumLength, number.length);
+      const text = h.textContent.trim();
+      if (!h.id) h.id = slugify(text);
+
+      const num = document.createElement('span');
+      num.className = 'heading-num';
+      num.textContent = number;
+      h.insertBefore(num, h.firstChild);
+
+      tocItems.push({ id: h.id, text, level, depth, number });
+    });
+  }
+
+  if (tocItems.length && docContentEl) {
+    const tocEl = document.createElement('nav');
+    tocEl.className = 'doc-toc';
+    const list = document.createElement('ul');
+    let maxNumLength = 1;
+    tocItems.forEach(i => {
+      maxNumLength = Math.max(maxNumLength, i.number.length);
 
       const li = document.createElement('li');
       // 缩进按「实际层级」而不是原始标题级别：首个标题是 h3 时它等价于一级条目，
       // 不能挂着 toc-level-3 缩进 16px，否则和编号 1 对不上。
-      li.className = 'toc-level-' + (depth + 1);
+      li.className = 'toc-level-' + (i.depth + 1);
       const a = document.createElement('a');
       a.href = '#' + i.id;
       a.dataset.anchorId = i.id; // 直接用原始 id，避免 hash 被百分号编码后比对不上
       const num = document.createElement('span');
       num.className = 'toc-num';
-      num.textContent = number;
+      num.textContent = i.number;
       a.appendChild(num);
       a.appendChild(document.createTextNode(i.text));
       li.appendChild(a);
@@ -556,12 +561,11 @@ function showContent(key) {
     // 让所有条目的文字左边缘对齐：编号列宽度取当前文档最长编号
     tocEl.style.setProperty('--toc-num-width', maxNumLength + 'ch');
     docContentEl.insertAdjacentElement('afterbegin', tocEl);
-    const headings = Array.from(docContentEl.querySelectorAll('h2, h3, h4'));
     const links = Array.from(tocEl.querySelectorAll('a'));
     const spy = () => {
       let activeId = null;
       const top = scrollHost.scrollTop + 16;
-      for (const h of headings) {
+      for (const h of headingEls) {
         if (offsetWithin(h) <= top) activeId = h.id;
       }
       links.forEach(a => {
