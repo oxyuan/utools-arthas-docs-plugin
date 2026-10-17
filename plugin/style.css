@@ -265,6 +265,14 @@ body, html {
   color: #24292e;
 }
 
+/* h4 原本吃浏览器默认的 16px/700，字重比 h2、h3（600）重一档，
+   四级标题反而显得比三级更硬。这里显式拉平，序号才好按同一套比例对齐。 */
+.doc-content h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #24292e;
+}
+
 /* 标题自带的层级序号（与顶部目录同一套编号，跳转过来能对上位置） */
 .doc-content h2,
 .doc-content h3,
@@ -272,20 +280,28 @@ body, html {
   position: relative;
 }
 
-/* 序号是一列「旁注」，不是标题的一部分：小一号、右对齐，
-   全篇共用 JS 量出来的同一栏宽（见 index.js），标题文字才能对齐成一条线。 */
+/* 序号是标题的「索引」，不是一条脚注：右对齐、
+   全篇共用 JS 量出来的同一栏宽（见 index.js），标题文字才能对齐成一条线。
+   字号按级别各配一档（见下方），所以这里只放共用属性。 */
 .doc-content .heading-num {
   display: inline-block;
   /* 固定像素而不是 em：h2~h4 字号不同，用 em 会让标题左缘差出半像素 */
   margin-right: 8px;
   color: #94a2b4;
-  font-size: 0.68em;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.02em;
   line-height: 1;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+
+/* 序号随标题级别一起缩放，但每个级别单独定档，而不是统一乘一个很小的系数：
+   h2 24→22、h3 20→18、h4 16→15。越深层比例收得越缓，
+   最深一级才不会缩成一个读不清的注脚。字重比标题（600）轻一档、
+   颜色也更淡，所以它够大却不会跟标题抢视线。 */
+.doc-content h2 > .heading-num { font-size: 22px; }
+.doc-content h3 > .heading-num { font-size: 18px; }
+.doc-content h4 > .heading-num { font-size: 15px; }
 
 .doc-content p {
   margin: 1em 0;
@@ -616,7 +632,7 @@ body, html {
     color: #e1e1e1;
   }
 
-  .doc-content h2, .doc-content h3 {
+  .doc-content h2, .doc-content h3, .doc-content h4 {
     color: #e1e1e1;
     border-bottom-color: #333;
   }
