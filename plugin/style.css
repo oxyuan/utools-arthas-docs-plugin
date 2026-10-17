@@ -272,11 +272,18 @@ body, html {
   position: relative;
 }
 
+/* 序号是一列「旁注」，不是标题的一部分：小一号、右对齐，
+   全篇共用 JS 量出来的同一栏宽（见 index.js），标题文字才能对齐成一条线。 */
 .doc-content .heading-num {
-  margin-right: 0.34em;
-  color: #8b949e;
-  font-weight: 500;
-  font-size: 0.78em;
+  display: inline-block;
+  /* 固定像素而不是 em：h2~h4 字号不同，用 em 会让标题左缘差出半像素 */
+  margin-right: 8px;
+  color: #94a2b4;
+  font-size: 0.68em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
@@ -774,13 +781,15 @@ body, html {
   border-bottom: 0;
 }
 
-/* 版本角标：默认宽度很小，只放得下一个版本号 + 下拉箭头 */
+/* 版本角标：默认只放得下「v4.3.5 ▾」，悬停展开成「版本 4.3.5 ▾」。
+   弧形比之前更「胖」一些：半径大于盒子高度，弧线在中段让出更多右侧空间，
+   常驻的下拉箭头不会正好压在切边上。 */
 .version-corner {
   position: absolute;
-  top: 8px;
-  left: 10px;
-  width: 62px;
-  height: calc(100% - 16px);
+  top: 6px;
+  left: 9px;
+  width: 74px;
+  height: calc(100% - 12px);
   z-index: 5;
   transition: width 0.26s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
@@ -788,42 +797,45 @@ body, html {
 .version-corner:hover,
 .version-corner:focus-within,
 .version-corner.open {
-  width: 88px;
+  width: 92px;
 }
 
-/* 弧形描边：比按钮本体大半个像素，露出一条细边 */
+/* 弧形描边：比按钮本体大一点，沿弧线露出一条细边 */
 .version-corner::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: #ccdffb;
-  clip-path: ellipse(100% 100% at 0 0);
+  background: #cfdef8;
+  clip-path: ellipse(100% 122% at 0 0);
   pointer-events: none;
 }
 
 .version-trigger {
   position: absolute;
   inset: 0;
-  padding: 0;
+  display: flex;
+  align-items: center;
+  /* 内容靠左上排布，右侧那段留给弧线，避免文字和箭头被切边啃掉 */
+  padding: 0 8px 0 11px;
   border: 0;
   border-radius: 0;
-  background: linear-gradient(150deg, #f4f8ff 0%, #e7f1ff 55%, #dbe8ff 100%);
+  background: linear-gradient(150deg, #f5f9ff 0%, #e9f2ff 55%, #ddeaff 100%);
   color: #2c5aa0;
   font-family: inherit;
   cursor: pointer;
   overflow: hidden;
-  /* 四分之一的椭圆，形成从底部左侧到右上角的弧线切边 */
-  clip-path: ellipse(calc(100% - 1.5px) 100% at 0 0);
+  /* 弧线切边：从底部左侧扫到右上角，半径略大于高度让弧更舒展 */
+  clip-path: ellipse(calc(100% - 1px) 122% at 0 0);
   /* 一点点内高光和投影，让角标看起来是「可按的控件」而不是装饰 */
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75),
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8),
     0 1px 2px rgba(44, 90, 160, 0.18);
   transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .version-trigger:hover {
-  background: linear-gradient(150deg, #e9f2ff 0%, #d5e7ff 55%, #c3daff 100%);
+  background: linear-gradient(150deg, #eaf3ff 0%, #d8e8ff 55%, #c6dcff 100%);
   color: #1f4a8c;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8),
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85),
     0 2px 6px rgba(44, 90, 160, 0.26);
 }
 
@@ -840,36 +852,41 @@ body, html {
   outline-offset: -2px;
 }
 
-.version-short,
-.version-full {
-  position: absolute;
-  left: 9px;
-  top: 50%;
-  transform: translateY(-50%);
+/* 两种文案叠在同一个网格单元里，只做透明度切换；折角箭头写在各自文案后面，
+   所以两种状态下箭头都紧贴着版本号，不会被弧线切边啃掉。 */
+.version-label {
+  display: inline-grid;
+  flex: 0 0 auto;
+}
+
+.version-label > span {
+  grid-area: 1 / 1;
+  align-self: center;
+  justify-self: start;
   line-height: 1;
   white-space: nowrap;
   transition: opacity 0.16s ease;
 }
 
 .version-short {
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 600;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.24px;
   font-variant-numeric: tabular-nums;
   opacity: 0.95;
-  padding-right: 9px; /* 给右侧常驻的下拉箭头留位置 */
 }
 
 .version-short::before {
   content: 'v';
   font-weight: 500;
-  opacity: 0.7;
+  opacity: 0.6;
   margin-right: 0.5px;
 }
 
 .version-full {
-  font-size: 11.5px;
+  font-size: 10.5px;
   font-weight: 500;
+  letter-spacing: 0.1px;
   opacity: 0;
 }
 
@@ -878,19 +895,20 @@ body, html {
   font-variant-numeric: tabular-nums;
 }
 
-.version-caret {
-  position: absolute;
-  right: 7px;
-  top: 50%;
-  width: 0;
-  height: 0;
-  margin-top: -1px;
-  border-left: 3.5px solid transparent;
-  border-right: 3.5px solid transparent;
-  border-top: 4px solid currentColor;
-  /* 常驻显示：这是「这里可以点、点了会展开」最直接的提示 */
-  opacity: 0.5;
-  transition: opacity 0.16s ease, transform 0.16s ease;
+/* 折角箭头：常驻显示，是「这里可以点、点了会展开」最直接的提示 */
+.version-short::after,
+.version-full::after {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  margin-left: 5px;
+  margin-bottom: 2px;
+  border-right: 1.4px solid currentColor;
+  border-bottom: 1.4px solid currentColor;
+  opacity: 0.75;
+  transform: rotate(45deg);
+  transition: transform 0.16s ease;
 }
 
 .version-corner:hover .version-short,
@@ -905,14 +923,20 @@ body, html {
   opacity: 1;
 }
 
-.version-corner:hover .version-caret,
-.version-corner:focus-within .version-caret,
-.version-corner.open .version-caret {
-  opacity: 0.85;
+/* 展开时折角翻过来，提示「再点一下会收起」 */
+.version-corner:hover .version-short::after,
+.version-corner:hover .version-full::after,
+.version-corner:focus-within .version-short::after,
+.version-corner:focus-within .version-full::after,
+.version-corner.open .version-short::after,
+.version-corner.open .version-full::after {
+  opacity: 1;
 }
 
-.version-corner.open .version-caret {
-  transform: rotate(180deg);
+.version-corner.open .version-short::after,
+.version-corner.open .version-full::after {
+  transform: rotate(-135deg);
+  margin-bottom: 0;
 }
 
 /* 版本下拉：挂在角标下方，样式复用 .dropdown-content */
@@ -998,26 +1022,29 @@ body, html {
 /* 版本角标占用左侧空间，分组按钮的文字整体右移；
    角标展开时进一步右移，避免两块内容压在一起 */
 .switcher #categoryButton {
-  padding-left: 54px;
+  padding-left: 80px;
+  padding-right: 8px;
   transition: padding-left 0.26s cubic-bezier(0.22, 0.61, 0.36, 1),
     background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .switcher.version-expanded #categoryButton {
-  padding-left: 90px;
+  padding-left: 96px;
 }
 
-/* 窄窗口侧边栏只有 180px，展开会挤掉分组按钮的文字：
-   这里保持紧凑宽度，只靠投影、箭头和点击态提示可交互 */
+/* 窄窗口侧边栏只有 180px，再展开会挤掉分组按钮的文字：
+   这里保持紧凑宽度，只靠箭头、投影和点击态提示可交互 */
 @media (max-width: 768px) {
+  .version-corner,
   .version-corner:hover,
   .version-corner:focus-within,
   .version-corner.open {
-    width: 62px;
+    width: 68px;
   }
 
+  .switcher #categoryButton,
   .switcher.version-expanded #categoryButton {
-    padding-left: 54px;
+    padding-left: 74px;
   }
 
   .version-corner:hover .version-short,

@@ -511,6 +511,7 @@ function showContent(key) {
       )
     : [];
   const tocItems = [];
+  const numEls = [];
   {
     const counters = [];
     headingEls.forEach(h => {
@@ -530,8 +531,22 @@ function showContent(key) {
       num.textContent = number;
       h.insertBefore(num, h.firstChild);
 
+      numEls.push(num);
       tocItems.push({ id: h.id, text, level, depth, number });
     });
+
+    // 全篇共用一列右对齐的序号：数字右缘、标题左缘各自成一条竖线，
+    // 换到下一级不会因为字号变小反而往前缩。
+    if (numEls.length) {
+      let gutter = 0;
+      numEls.forEach(el => {
+        gutter = Math.max(gutter, el.getBoundingClientRect().width);
+      });
+      const width = Math.ceil(gutter) + 'px';
+      numEls.forEach(el => {
+        el.style.minWidth = width;
+      });
+    }
   }
 
   if (tocItems.length && docContentEl) {
